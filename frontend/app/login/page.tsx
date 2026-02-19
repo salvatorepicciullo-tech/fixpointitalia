@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiFetch } from '@/app/lib/api'; // ✅ usa API centrale
+import { apiFetch } from '@/app/lib/api';
 
 export default function LoginPage() {
 const router = useRouter();
@@ -21,7 +21,6 @@ if (!email || !password) {
 }
 
 try {
-  // 🔥 LOGIN TRAMITE apiFetch (usa NEXT_PUBLIC_API_URL)
   const data = await apiFetch('/api/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
@@ -56,31 +55,17 @@ try {
 
 };
 
-return ( <div className="min-h-screen flex items-center justify-center bg-gray-100">
-{/* CARD LOGIN */} <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+return ( <div className="min-h-screen flex items-center justify-center bg-gray-100"> <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
 
 ```
-    {/* LOGO FIXPOINT */}
-    <div className="flex justify-center mb-6 animate-[fadeIn_.5s_ease]">
+    <div className="flex justify-center mb-6">
       <div className="flex items-center gap-3">
-
-        {/* CERCHIO LOGO */}
-        <div
-          className="
-          w-10 h-10 rounded-full
-          bg-blue-600 text-white
-          flex items-center justify-center
-          font-bold text-lg shadow-md
-          animate-[logoSpinIn_.45s_ease]
-          "
-        >
+        <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-md">
           F
         </div>
-
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
           FixPoint
         </h1>
-
       </div>
     </div>
 
@@ -95,7 +80,7 @@ return ( <div className="min-h-screen flex items-center justify-center bg-gray-1
     )}
 
     <input
-      className="border w-full px-3 py-2 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="border w-full px-3 py-2 rounded-lg mb-3"
       placeholder="Email"
       value={email}
       onChange={(e) => setEmail(e.target.value)}
@@ -103,7 +88,7 @@ return ( <div className="min-h-screen flex items-center justify-center bg-gray-1
 
     <input
       type="password"
-      className="border w-full px-3 py-2 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="border w-full px-3 py-2 rounded-lg mb-4"
       placeholder="Password"
       value={password}
       onChange={(e) => setPassword(e.target.value)}
@@ -114,6 +99,7 @@ return ( <div className="min-h-screen flex items-center justify-center bg-gray-1
       className="bg-blue-600 text-white w-full py-2 rounded-lg hover:bg-blue-700 transition"
     >
       Accedi
+   
     </button>
 
   </div>
