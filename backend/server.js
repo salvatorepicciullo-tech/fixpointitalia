@@ -6,7 +6,8 @@ const dbPath = path.join(__dirname, 'fixpoint.db');
 const bcrypt = require('bcrypt');
 const PDFDocument = require('pdfkit');
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = 'fixpoint_super_secret'; // poi lo spostiamo in env
+const JWT_SECRET = process.env.JWT_SECRET || 'fixpoint_dev_secret';
+ // poi lo spostiamo in env
 console.log('🔥 BACKEND FIXPOINT NUOVA VERSIONE CARICATA 🔥');
 
 const app = express();
@@ -16,10 +17,23 @@ const PORT = 3001;
    MIDDLEWARE
 ======================== */
 
+const allowedOrigins = [
+  'https://fixpointitalia.vercel.app',
+  'http://localhost:3000'
+];
+
 app.use(cors({
-  origin: [
-    "https://fixpointitalia.vercel.app"
-  ],
+  origin: function(origin, callback) {
+
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.log('❌ CORS BLOCCATO:', origin);
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 
@@ -100,14 +114,6 @@ db.run(
   }
 );
 
-db.run(
-  `ALTER TABLE quotes ADD COLUMN description TEXT`,
-  err => {
-    if (err && !err.message.includes('duplicate column')) {
-      console.error('Errore ALTER TABLE quotes description:', err.message);
-    }
-  }
-);
 // 🔥 AGGIUNGE DESCRIPTION AI QUOTES (SAFE)
 db.run(
   `ALTER TABLE quotes ADD COLUMN description TEXT`,
