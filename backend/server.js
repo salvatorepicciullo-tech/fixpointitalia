@@ -12,10 +12,17 @@ console.log('🔥 BACKEND FIXPOINT NUOVA VERSIONE CARICATA 🔥');
 const app = express();
 const PORT = 3001;
 
-/* =======================
+/* ========================
    MIDDLEWARE
-======================= */
-app.use(cors());
+======================== */
+
+app.use(cors({
+  origin: [
+    "https://fixpointitalia.vercel.app"
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
 /* =======================
