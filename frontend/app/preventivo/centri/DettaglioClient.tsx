@@ -1,8 +1,14 @@
 'use client';
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
+
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+/* =======================
+   API ROOT
+======================= */
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 /* =======================
    TIPI
@@ -44,7 +50,7 @@ export default function CentriPage() {
 
     setLoading(true);
 
-    fetch(`http://localhost:3001/api/fixpoints?city=${city}`)
+    fetch(`${API}/api/fixpoints/by-city?city=${city}`)
       .then(r => r.json())
       .then(data => {
         setFixpoints(Array.isArray(data) ? data : []);
@@ -57,40 +63,36 @@ export default function CentriPage() {
      INVIO PREVENTIVO
   ======================= */
   const submitQuote = async () => {
-    if (
-      !deviceTypeId ||
-      !brandId ||
-      !modelId ||
-      !repairIds ||
-      !city ||
-      !selectedFixpoint
-    ) {
+
+    if (!modelId || !repairIds || !city || !selectedFixpoint) {
+      alert('Dati mancanti');
       return;
     }
 
     setSending(true);
 
     try {
-      const res = await fetch('http://localhost:3001/api/quotes', {
+
+      const res = await fetch(`${API}/api/quotes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          device_type_id: Number(deviceTypeId),
-          brand_id: Number(brandId),
           model_id: Number(modelId),
           repair_ids: repairIds.split(',').map(Number),
           color: color || null,
           city,
           fixpoint_id: selectedFixpoint,
-          status: 'NEW',
         }),
       });
 
       if (!res.ok) throw new Error('Errore invio preventivo');
 
-      // 👉 pagina conferma (la creiamo dopo)
-      router.push('/preventivo/conferma');
-    } catch (err) {
+      const data = await res.json();
+
+      /* 🔥 PASSA QUOTE_ID ALLA CONFERMA */
+      router.push(`/preventivo/conferma?quoteId=${data.quote_id}`);
+
+    } catch {
       alert('Errore durante l’invio del preventivo');
     } finally {
       setSending(false);
