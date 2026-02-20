@@ -1583,6 +1583,40 @@ app.delete('/api/model-repairs/:id', (req, res) => {
   );
 
 });
+
+/* =========================
+   MODEL REPAIRS LIST
+========================= */
+app.get('/api/model-repairs', (req, res) => {
+  const { model_id } = req.query;
+
+  if (!model_id) {
+    return res.json([]);
+  }
+
+  db.all(
+    `
+    SELECT
+      mr.repair_id,
+      r.name AS repair,
+      mr.price
+    FROM model_repairs mr
+    LEFT JOIN repairs r ON r.id = mr.repair_id
+    WHERE mr.model_id = ?
+    `,
+    [model_id],
+    (err, rows) => {
+      if (err) {
+        console.error('Errore model-repairs:', err.message);
+        return res.status(500).json([]);
+      }
+
+      res.json(rows || []);
+    }
+  );
+});
+
+
 /* =======================
    QUOTES (PREVENTIVI)
 ======================= */
