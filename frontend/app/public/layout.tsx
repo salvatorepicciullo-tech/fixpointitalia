@@ -1,6 +1,8 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
+export const dynamic = "force-static";
+
 export default function PublicLayout({
   children,
 }: {
@@ -8,13 +10,8 @@ export default function PublicLayout({
 }) {
   return (
     <>
-      {/* HEADER PUBBLICO */}
       <Header />
-
-      {/* CONTENUTO PAGINE PUBBLICHE */}
       {children}
-
-      {/* FOOTER PUBBLICO */}
       <Footer />
     </>
   );
