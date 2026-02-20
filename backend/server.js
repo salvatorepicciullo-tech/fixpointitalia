@@ -45,10 +45,18 @@ const db = new sqlite3.Database(dbPath, err => {
     db.run('PRAGMA journal_mode = WAL');
     db.run('PRAGMA foreign_keys = ON');
     console.log('Database collegato correttamente ✅');
+
     initDatabase();
+
+    // 🔥 FIX RENDER: aspetta creazione tabelle prima degli ALTER
+    setTimeout(() => {
+      safeAlterTables();
+    }, 800);
   }
 });
+
 function initDatabase() {
+
  const tables = [
 
 /* 🔥 AGGIUNTE NECESSARIE PER RENDER */
@@ -111,6 +119,44 @@ function initDatabase() {
 ];
 
   tables.forEach(sql => db.run(sql));
+}
+
+
+/* =======================
+   SAFE ALTER TABLES (RENDER FIX)
+======================= */
+function safeAlterTables() {
+
+  // 🔥 FIXPOINT PRICE PERCENT
+  db.run(
+    `ALTER TABLE fixpoints ADD COLUMN price_percent INTEGER DEFAULT 0`,
+    err => {
+      if (err && !err.message.includes('duplicate column')) {
+        console.error('Errore ALTER TABLE fixpoints:', err.message);
+      }
+    }
+  );
+
+  // 🔥 DEVICE TYPE RIPARAZIONI
+  db.run(
+    `ALTER TABLE repairs ADD COLUMN device_type_id INTEGER`,
+    err => {
+      if (err && !err.message.includes('duplicate column')) {
+        console.error('Errore ALTER TABLE repairs:', err.message);
+      }
+    }
+  );
+
+  // 🔥 DESCRIPTION QUOTES
+  db.run(
+    `ALTER TABLE quotes ADD COLUMN description TEXT`,
+    err => {
+      if (err && !err.message.includes('duplicate column')) {
+        console.error('Errore ALTER TABLE quotes:', err.message);
+      }
+    }
+  );
+
 }
 
 
