@@ -69,7 +69,8 @@ const distance = distanceParam ? Number(distanceParam) : null;
      CALCOLO PREZZO BACKEND
   ======================= */
   useEffect(() => {
-    if (!modelId || !fixpointId || repairIds.length === 0) return;
+  if (!modelId || !fixpointId || !repairIdsParam) return;
+
 
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calc-price?model_id=${modelId}&repair_ids=${repairIds.join(',')}&fixpoint_id=${fixpointId}`)
       .then(r => r.json())
