@@ -23,6 +23,8 @@ export default function ConfermaPreventivoPage() {
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState(10);
 
+  const API = process.env.NEXT_PUBLIC_API_URL;
+
   /* =======================
      LOAD QUOTE DAL DB
   ======================= */
@@ -33,14 +35,15 @@ export default function ConfermaPreventivoPage() {
       return;
     }
 
-    fetch(`http://localhost:3001/api/quotes/${quoteId}`)
+    fetch(`${API}/api/quotes/${quoteId}`)
       .then(r => r.json())
       .then(data => {
         if (data?.id) setQuote(data);
       })
+      .catch(err => console.error('Errore fetch quote:', err))
       .finally(() => setLoading(false));
 
-  }, [quoteId]);
+  }, [quoteId, API]);
 
   /* =======================
      COUNTDOWN UX PRO
@@ -133,7 +136,7 @@ export default function ConfermaPreventivoPage() {
 
           {quoteId && (
             <a
-              href={`http://localhost:3001/api/quotes/${quoteId}/pdf`}
+              href={`${API}/api/quotes/${quoteId}/pdf`}
               target="_blank"
               className="block w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold transition"
             >
