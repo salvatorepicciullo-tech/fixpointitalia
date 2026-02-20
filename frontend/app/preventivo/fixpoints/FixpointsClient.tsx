@@ -30,13 +30,16 @@ export default function FixpointsPage() {
 
     if (!city) return;
 
-    const loadFixpoints = async (lat:number, lng:number) => {
+   const API = process.env.NEXT_PUBLIC_API_URL;
 
-      try {
+const loadFixpoints = async (lat:number, lng:number) => {
 
-        const res = await fetch(
-          `http://localhost:3001/api/fixpoints/nearby?lat=${lat}&lng=${lng}`
-        );
+  try {
+
+    const res = await fetch(
+      `${API}/api/fixpoints/nearby?lat=${lat}&lng=${lng}`
+    );
+
 
         const data = await res.json();
 
