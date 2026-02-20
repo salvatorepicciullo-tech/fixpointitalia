@@ -20,9 +20,16 @@ const PORT = process.env.PORT || 3001;
 ======================== */
 
 app.use(cors({
-  origin: true,
+  origin: [
+    'http://localhost:3000',
+    'https://fixpointitalia.vercel.app'
+  ],
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
   credentials: true
 }));
+
+app.options('*', cors()); // 🔥 fondamentale per preflight Vercel
 
 app.use(express.json());
 /* =======================
