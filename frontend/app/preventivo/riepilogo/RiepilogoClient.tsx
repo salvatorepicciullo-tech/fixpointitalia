@@ -48,7 +48,7 @@ const distance = distanceParam ? Number(distanceParam) : null;
       return;
     }
 
-    fetch(`http://localhost:3001/api/model-repairs?model_id=${modelId}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/model-repairs?model_id=${modelId}`)
       .then(r => r.json())
       .then((data: ModelRepair[]) => {
         const selected = data.filter(r =>
@@ -71,9 +71,7 @@ const distance = distanceParam ? Number(distanceParam) : null;
   useEffect(() => {
     if (!modelId || !fixpointId || repairIds.length === 0) return;
 
-    fetch(
-      `http://localhost:3001/api/calc-price?model_id=${modelId}&repair_ids=${repairIds.join(',')}&fixpoint_id=${fixpointId}`
-    )
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calc-price?model_id=${modelId}&repair_ids=${repairIds.join(',')}&fixpoint_id=${fixpointId}`)
       .then(r => r.json())
       .then(data => {
         if (!data) return;
