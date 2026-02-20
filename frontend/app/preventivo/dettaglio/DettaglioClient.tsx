@@ -53,21 +53,24 @@ const originalPrice = params.get('originalPrice');
     setSending(true);
 
     try {
-      const res = await fetch('http://localhost:3001/api/quotes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model_id: Number(modelId),
-          repair_ids: repairIds.split(',').map(Number),
-          fixpoint_id: Number(fixpointId),
-          price: Number(total),
-          city,
-          customer_name: `${nome} ${cognome}`,
-          customer_email: email || null,
-          customer_phone: telefono,
-          status: 'NEW',
-        }),
-      });
+     const res = await fetch(
+  'https://fixpoint-backend-0143.onrender.com/api/quotes',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model_id: Number(modelId),
+      repair_ids: repairIds.split(',').map(Number),
+      fixpoint_id: Number(fixpointId),
+      price: Number(total),
+      city,
+      customer_name: `${nome} ${cognome}`,
+      customer_email: email || null,
+      customer_phone: telefono,
+      status: 'NEW',
+    }),
+  }
+);
 
       if (!res.ok) throw new Error('Errore invio');
 
