@@ -2998,6 +2998,28 @@ app.get('/api/seed-test', (req, res) => {
   });
 
 });
+/* ========================
+   SEED REAL MODELLO 2
+======================== */
+app.get('/api/seed-real', (req,res)=>{
+
+  db.run(`
+    INSERT INTO repairs (id,name,active)
+    VALUES (1,'Display',1)
+  `);
+
+  db.run(`
+    INSERT INTO models (id,name,device_type_id,brand_id)
+    VALUES (2,'iPhone 6',1,12)
+  `);
+
+  db.run(`
+    INSERT INTO model_repairs (model_id,repair_id,price)
+    VALUES (2,1,50)
+  `);
+
+  res.json({ seed:true });
+});
 
 /* =======================
    PUBLIC – VALUATION DEVICES (CONFIGURATI)
