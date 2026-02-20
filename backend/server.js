@@ -11,7 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fixpoint_dev_secret';
 console.log('🔥 BACKEND FIXPOINT NUOVA VERSIONE CARICATA 🔥');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 /* ========================
    MIDDLEWARE
