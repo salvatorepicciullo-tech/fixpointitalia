@@ -58,13 +58,38 @@ const db = new sqlite3.Database(dbPath, err => {
   }
 });
 function initDatabase() {
-  const tables = [
-    'CREATE TABLE IF NOT EXISTS device_types (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, active INTEGER DEFAULT 1)',
-    'CREATE TABLE IF NOT EXISTS brands (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, active INTEGER DEFAULT 1)',
-    'CREATE TABLE IF NOT EXISTS models (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, device_type_id INTEGER, brand_id INTEGER)',
-    'CREATE TABLE IF NOT EXISTS repairs (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, active INTEGER DEFAULT 1)',
-  'CREATE TABLE IF NOT EXISTS model_repairs (id INTEGER PRIMARY KEY AUTOINCREMENT, model_id INTEGER, repair_id INTEGER, price REAL)',
+ const tables = [
 
+/* 🔥 AGGIUNTE NECESSARIE PER RENDER */
+`CREATE TABLE IF NOT EXISTS fixpoints (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  city TEXT,
+  address TEXT,
+  phone TEXT,
+  email TEXT,
+  vat_number TEXT,
+  price_percent INTEGER DEFAULT 0,
+  lat REAL,
+  lng REAL,
+  active INTEGER DEFAULT 1
+)`,
+
+`CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT,
+  password_hash TEXT,
+  role TEXT,
+  fixpoint_id INTEGER,
+  active INTEGER DEFAULT 1
+)`,
+
+/* ✅ QUELLE CHE AVEVI GIÀ */
+'CREATE TABLE IF NOT EXISTS device_types (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, active INTEGER DEFAULT 1)',
+'CREATE TABLE IF NOT EXISTS brands (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, active INTEGER DEFAULT 1)',
+'CREATE TABLE IF NOT EXISTS models (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, device_type_id INTEGER, brand_id INTEGER)',
+'CREATE TABLE IF NOT EXISTS repairs (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, active INTEGER DEFAULT 1)',
+'CREATE TABLE IF NOT EXISTS model_repairs (id INTEGER PRIMARY KEY AUTOINCREMENT, model_id INTEGER, repair_id INTEGER, price REAL)',
 
 `CREATE TABLE IF NOT EXISTS fixpoint_brand_rules (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -92,7 +117,7 @@ function initDatabase() {
   repair_id INTEGER
 )`
 
-  ];
+];
 
   tables.forEach(sql => db.run(sql));
 }
