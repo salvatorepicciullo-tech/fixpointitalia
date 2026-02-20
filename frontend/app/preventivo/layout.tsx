@@ -9,8 +9,13 @@ export default function PreventivoLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="min-h-screen bg-gray-50">
-      {children}
-    </main>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+
+      {/* 👇 CONTAINER GLOBALE RESPONSIVE */}
+      <div className="flex-1 w-full max-w-7xl mx-auto px-4">
+        {children}
+      </div>
+
+    </div>
   );
 }
