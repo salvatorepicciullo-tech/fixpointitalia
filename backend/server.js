@@ -1840,26 +1840,35 @@ app.get('/api/quotes', (req, res) => {
 
 // GET SINGLE QUOTE
 app.get('/api/quotes/:id', (req, res) => {
-  db.get(
-    `
+
+  const { id } = req.params;
+
+  db.get(`
     SELECT
       q.*,
       m.name AS model,
-      GROUP_CONCAT(r.name, ', ') AS repair
+      GROUP_CONCAT(r.name, ' + ') AS repair,
+      f.name AS fixpoint_name
     FROM quotes q
     LEFT JOIN models m ON m.id = q.model_id
+    LEFT JOIN fixpoints f ON f.id = q.fixpoint_id
     LEFT JOIN quote_repairs qr ON qr.quote_id = q.id
     LEFT JOIN repairs r ON r.id = qr.repair_id
     WHERE q.id = ?
     GROUP BY q.id
-    `,
-    [req.params.id],
-    (err, row) => {
-      if (err || !row) return res.status(404).json({});
-      res.json(row);
+  `, [id], (err, row) => {
+
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error:'db error' });
     }
-  );
+
+    res.json(row || {});
+  });
+
 });
+
+
 
 // ASSIGN FIXPOINT (ADMIN)
 app.put('/api/quotes/:id/assign', (req, res) => {
