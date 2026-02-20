@@ -2980,6 +2980,24 @@ app.get('/api/calc-price', (req, res) => {
 
 });
 
+/* ========================
+   SEED TEST TEMPORANEO
+======================== */
+app.get('/api/seed-test', (req, res) => {
+
+  db.run(`
+    INSERT INTO model_repairs (model_id, repair_id, price)
+    VALUES (2,1,50)
+  `, err => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({error:'seed error'});
+    }
+
+    res.json({ ok:true });
+  });
+
+});
 
 /* =======================
    PUBLIC – VALUATION DEVICES (CONFIGURATI)
