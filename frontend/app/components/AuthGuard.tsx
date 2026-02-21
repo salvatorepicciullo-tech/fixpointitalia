@@ -13,7 +13,6 @@ export default function AuthGuard({ children, allowedRole }: Props) {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    // 🔥 SSR SAFE
     if (typeof window === 'undefined') return;
 
     const token = localStorage.getItem('token');
@@ -21,13 +20,13 @@ export default function AuthGuard({ children, allowedRole }: Props) {
 
     // ❌ NON LOGGATO
     if (!token) {
-      router.replace('/login');
+      router.replace('/fixpoint/login');
       return;
     }
 
     // ❌ RUOLO SBAGLIATO
     if (allowedRole && role !== allowedRole) {
-      router.replace('/login');
+      router.replace('/fixpoint/login');
       return;
     }
 
@@ -35,7 +34,6 @@ export default function AuthGuard({ children, allowedRole }: Props) {
     setChecking(false);
   }, [allowedRole, router]);
 
-  // 🔒 blocca render finché verifica
   if (checking) {
     return (
       <div className="w-full h-screen flex items-center justify-center text-sm text-gray-400">
