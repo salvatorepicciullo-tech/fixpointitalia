@@ -18,19 +18,16 @@ export default function AuthGuard({ children, allowedRole }: Props) {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
 
-    // ❌ NON LOGGATO
     if (!token) {
-      router.replace('/fixpoint/login');
+      router.replace('/fixpoint/login'); // ✅ FIX DEFINITIVO
       return;
     }
 
-    // ❌ RUOLO SBAGLIATO
     if (allowedRole && role !== allowedRole) {
-      router.replace('/fixpoint/login');
+      router.replace('/fixpoint/login'); // ✅ FIX DEFINITIVO
       return;
     }
 
-    // ✅ OK
     setChecking(false);
   }, [allowedRole, router]);
 
