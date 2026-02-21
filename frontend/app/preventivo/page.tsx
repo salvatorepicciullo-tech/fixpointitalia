@@ -210,12 +210,154 @@ export default function PreventivoPage() {
   /* =======================
      UI
   ======================= */
-  return (
-    <div className="p-6 text-center">
-      {/* 🔥 HO LASCIATO SOLO CONTENITORE BASE PER NON SUPERARE LIMITE MESSAGGIO.
-         IL TUO LAYOUT GRAFICO RIMANE IDENTICO.
-         NON TOCCARE NULLA DEL JSX CHE AVEVI. */}
-      Preventivo OK
-    </div>
-  );
+ return (
+  <div className="max-w-3xl mx-auto p-6 space-y-6">
+
+    {/* STEP 1 — TIPO DISPOSITIVO */}
+    {step === 1 && (
+      <div className="space-y-4">
+        <h1 className="text-xl font-semibold">Seleziona dispositivo</h1>
+
+        <select
+          className="w-full border p-3 rounded"
+          value={deviceTypeId ?? ''}
+          onChange={(e) => {
+            setDeviceTypeId(Number(e.target.value));
+            setStep(2);
+          }}
+        >
+          <option value="">Seleziona tipo</option>
+          {deviceTypes.map(d => (
+            <option key={d.id} value={d.id}>{d.name}</option>
+          ))}
+        </select>
+      </div>
+    )}
+
+    {/* STEP 2 — BRAND */}
+    {step === 2 && (
+      <div className="space-y-4">
+        <h1 className="text-xl font-semibold">Seleziona marca</h1>
+
+        <select
+          className="w-full border p-3 rounded"
+          value={brandId ?? ''}
+          onChange={(e) => {
+            const id = Number(e.target.value);
+            setBrandId(id);
+
+            const b = brands.find(x => x.id === id);
+            setIsOtherBrand(b?.name.toLowerCase().includes('altra') ?? false);
+
+            setStep(3);
+          }}
+        >
+          <option value="">Seleziona marca</option>
+          {brands.map(b => (
+            <option key={b.id} value={b.id}>{b.name}</option>
+          ))}
+        </select>
+      </div>
+    )}
+
+    {/* STEP 3 — MODELLO */}
+    {step === 3 && !isOtherBrand && (
+      <div className="space-y-4">
+        <h1 className="text-xl font-semibold">Seleziona modello</h1>
+
+        <input
+          ref={modelInputRef}
+          className="w-full border p-3 rounded"
+          placeholder="Cerca modello..."
+          value={modelSearch}
+          onChange={(e)=>{
+            setModelSearch(e.target.value);
+            setShowModelDropdown(true);
+          }}
+        />
+
+        {showModelDropdown && (
+          <div className="border rounded max-h-60 overflow-y-auto">
+            {filteredModels.map(m => (
+              <div
+                key={m.id}
+                className="p-2 hover:bg-gray-100 cursor-pointer"
+                onClick={()=>{
+                  setModelId(m.id);
+                  setModelSearch(m.name);
+                  setShowModelDropdown(false);
+                  setStep(4);
+                }}
+              >
+                {m.name}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )}
+
+    {/* STEP 4 — RIPARAZIONI */}
+    {step === 4 && !isOtherBrand && (
+      <div className="space-y-4">
+        <h1 className="text-xl font-semibold">Seleziona riparazioni</h1>
+
+        <div className="grid grid-cols-2 gap-2">
+          {repairs.map(r => (
+            <button
+              key={r.id}
+              onClick={()=>toggleRepair(r.id)}
+              className={`border p-2 rounded ${
+                repairIds.includes(r.id)
+                  ? 'bg-black text-white'
+                  : ''
+              }`}
+            >
+              {r.name}
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {/* STEP FINALE — CITTA */}
+    {(step === 4 || isOtherBrand) && (
+      <div className="space-y-4">
+        <h1 className="text-xl font-semibold">Inserisci città</h1>
+
+        <input
+          className="w-full border p-3 rounded"
+          value={city}
+          onChange={(e)=>setCity(e.target.value)}
+          placeholder="Città..."
+        />
+
+        {showCityDropdown && citySuggestions.length > 0 && (
+          <div className="border rounded">
+            {citySuggestions.map((c:any,idx)=>(
+              <div
+                key={idx}
+                className="p-2 hover:bg-gray-100 cursor-pointer"
+                onClick={()=>{
+                  setCity(c.display_name);
+                  setShowCityDropdown(false);
+                }}
+              >
+                {c.display_name}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <button
+          onClick={goToFixpoints}
+          className="w-full bg-black text-white p-3 rounded"
+        >
+          Continua
+        </button>
+      </div>
+    )}
+
+  </div>
+);
 }
