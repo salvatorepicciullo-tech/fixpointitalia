@@ -98,6 +98,7 @@ const db = new sqlite3.Database(dbPath, err => {
   }
 });
 function initDatabase() {
+require('./seed');
   const tables = [
     'CREATE TABLE IF NOT EXISTS device_types (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, active INTEGER DEFAULT 1)',
     'CREATE TABLE IF NOT EXISTS brands (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, active INTEGER DEFAULT 1)',
