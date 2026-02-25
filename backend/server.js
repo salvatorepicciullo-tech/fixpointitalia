@@ -217,7 +217,7 @@ db.get('SELECT COUNT(*) as total FROM device_types', (err,row)=>{
   if(!row || row.total === 0){
 
     console.log('🌱 Avvio seed FixPoint (prima installazione)...');
-    require('./seed')(db);
+   // require('./seed')(db);
 
   }else{
 
