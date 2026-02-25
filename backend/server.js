@@ -216,40 +216,6 @@ function initDatabase() {
 
 }
 
-// =======================
-// DEVICE BASE VALUES
-// =======================
-db.run(`
-  CREATE TABLE IF NOT EXISTS device_base_values (
-    model_id INTEGER PRIMARY KEY,
-    max_value REAL NOT NULL,
-    FOREIGN KEY (model_id) REFERENCES models(id)
-  )
-`);
-
-// =======================
-// DEVICE DEFECTS
-// =======================
-db.run(`
-  CREATE TABLE IF NOT EXISTS device_defects (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
-  )
-`);
-
-// =======================
-// DEFECT PENALTIES
-// =======================
-db.run(`
-  CREATE TABLE IF NOT EXISTS device_defect_penalties (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    model_id INTEGER NOT NULL,
-    defect_id INTEGER NOT NULL,
-    penalty REAL NOT NULL,
-    FOREIGN KEY (model_id) REFERENCES models(id),
-    FOREIGN KEY (defect_id) REFERENCES device_defects(id)
-  )
-`);
 
 
 
