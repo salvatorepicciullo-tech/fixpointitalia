@@ -53,18 +53,18 @@ module.exports = function(db){
     // =========================
     // 🔥 ADMIN USER
     // =========================
-    db.run(`
-      INSERT OR IGNORE INTO users
-      (id,email,password_hash,role,active)
-      VALUES
-      (
-        1,
-        'admin@fixpoint.it',
-        '$2b$10$WmZ8w9x7Jm0X6uY9o9VYQe6O9hB7gWkC1x3x9q0V3c5G6G3sQf9bK',
-        'admin',
-        1
-      )
-    `);
+   db.run(`
+INSERT OR IGNORE INTO users
+(id,email,password_hash,role,active)
+VALUES
+(
+  1,
+  'admin@fixpoint.it',
+  '$2b$10$KbQiVdQZVQ4rU6D1Q7C0yOa3vYbVqjXGfW7J9X9V8O1Y5nV0lS7g2',
+  'admin',
+  1
+)
+`);
 
     console.log('✅ Seed completato con successo');
 
