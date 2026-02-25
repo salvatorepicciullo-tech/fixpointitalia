@@ -137,6 +137,41 @@ function initDatabase() {
 
   tables.forEach(sql => db.run(sql));
 
+// 🔥 AGGIUNGE PERCENTUALE PREZZO AI FIXPOINT (SAFE)
+db.run(
+  `ALTER TABLE fixpoints ADD COLUMN price_percent INTEGER DEFAULT 0`,
+  err => {
+    if (err && !err.message.includes('duplicate column')) {
+      console.error('Errore ALTER TABLE fixpoints:', err.message);
+    }
+  }
+);
+
+// 🔥 AGGIUNGE DEVICE TYPE ALLE RIPARAZIONI (SAFE)
+db.run(
+  `ALTER TABLE repairs ADD COLUMN device_type_id INTEGER`,
+  err => {
+    if (err && !err.message.includes('duplicate column')) {
+      console.error('Errore ALTER TABLE repairs:', err.message);
+    }
+  }
+);
+
+// 🔥 AGGIUNGE DESCRIPTION AI QUOTES (SAFE)
+db.run(
+  `ALTER TABLE quotes ADD COLUMN description TEXT`,
+  err => {
+    if (err && !err.message.includes('duplicate column')) {
+      console.error('Errore ALTER TABLE quotes:', err.message);
+    }
+  }
+);
+
+
+setTimeout(() => {
+  require('./seed');
+}, 1500);
+
 
 // 🔥 SAFE ALTER DOPO CREAZIONE TABELLE
 db.run(
@@ -148,7 +183,6 @@ db.run(
   }
 );
 
-require('./seed');
 }
 
 
