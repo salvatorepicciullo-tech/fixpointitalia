@@ -97,6 +97,7 @@ const db = new sqlite3.Database(dbPath, err => {
     initDatabase();
   }
 });
+
 function initDatabase() {
 
   db.serialize(() => {
@@ -190,11 +191,12 @@ function initDatabase() {
 
     ];
 
+    // CREA TUTTE LE TABELLE
     tables.forEach(sql => db.run(sql));
 
     console.log('✅ Tabelle assicurate');
 
-    // 🔥 ALTER SAFE (NON ROMPONO SE GIÀ ESISTONO)
+    // ALTER SAFE
     db.run(`ALTER TABLE repairs ADD COLUMN device_type_id INTEGER`,()=>{});
     db.run(`ALTER TABLE quotes ADD COLUMN description TEXT`,()=>{});
     db.run(`ALTER TABLE fixpoints ADD COLUMN price_percent INTEGER DEFAULT 0`,()=>{});
@@ -204,12 +206,15 @@ function initDatabase() {
 
     console.log('🧩 Alter safe completati');
 
-    require('./seed');
+    // 🚨 QUI STA LA FIX VERA
+    db.run('SELECT 1', () => {
+      console.log('📦 Tabelle pronte, avvio seed...');
+      require('./seed');
+    });
 
   });
 
 }
-
 
 // =======================
 // DEVICE BASE VALUES
