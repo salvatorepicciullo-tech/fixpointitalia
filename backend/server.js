@@ -408,7 +408,11 @@ app.post('/api/device-types', (req, res) => {
         'INSERT INTO device_types (name, active) VALUES (?,1)',
         [name],
         function () {
-          res.json({ success: true, id: this.lastID });
+          res.json({
+  id: this.lastID,
+  name,
+  active: 1
+});
         }
       );
     }
