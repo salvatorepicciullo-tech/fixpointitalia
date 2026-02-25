@@ -50,17 +50,17 @@ module.exports = function(db){
       (3,2,85)
     `);
 
-    // =========================
-    // 🔥 ADMIN USER
-    // =========================
-   db.run(`
-INSERT OR IGNORE INTO users
+   // =========================
+// 🔥 ADMIN USER
+// =========================
+db.run(`
+INSERT OR REPLACE INTO users
 (id,email,password_hash,role,active)
 VALUES
 (
   1,
   'admin@fixpoint.it',
-  '$2b$10$KbQiVdQZVQ4rU6D1Q7C0yOa3vYbVqjXGfW7J9X9V8O1Y5nV0lS7g2',
+  '$2b$10$9iXxgG9t2lZP7Z1Xc2Rk9eYJ0mRZK0vG6y4C4Gx1k4xF0lY1zqvSe',
   'admin',
   1
 )
