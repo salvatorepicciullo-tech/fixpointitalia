@@ -107,6 +107,48 @@ function initDatabase() {
   'CREATE TABLE IF NOT EXISTS model_repairs (id INTEGER PRIMARY KEY AUTOINCREMENT, model_id INTEGER, repair_id INTEGER, price REAL)',
 
 
+`CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE,
+  password_hash TEXT,
+  role TEXT,
+  fixpoint_id INTEGER,
+  active INTEGER DEFAULT 1
+)`,
+
+`CREATE TABLE IF NOT EXISTS fixpoints (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  city TEXT,
+  address TEXT,
+  phone TEXT,
+  email TEXT,
+  vat_number TEXT,
+  price_percent INTEGER DEFAULT 0,
+  lat REAL,
+  lng REAL,
+  active INTEGER DEFAULT 1
+)`,
+
+`CREATE TABLE IF NOT EXISTS device_valuations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  model_id INTEGER,
+  city TEXT,
+  customer_name TEXT,
+  customer_email TEXT,
+  customer_phone TEXT,
+  fixpoint_id INTEGER,
+  status TEXT DEFAULT 'NEW',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)`,
+
+`CREATE TABLE IF NOT EXISTS valuation_defects (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  valuation_id INTEGER,
+  defect_id INTEGER
+)`,
+
+
 `CREATE TABLE IF NOT EXISTS fixpoint_brand_rules (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   fixpoint_id INTEGER NOT NULL,
