@@ -21,13 +21,13 @@ export default function DeviceTypesPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ LOAD CORRETTO (NO REFRESH PAGINA)
+  // ✅ LOAD REALE DAL DB (FONTE VERITÀ)
   const load = async () => {
     try {
       const res = await apiFetch('/api/device-types');
       const data: DeviceType[] = await res.json();
 
-      setItems([...data]);
+      setItems(data);
 
       const usageEntries = await Promise.all(
         data.map(async (d) => {
@@ -42,8 +42,7 @@ export default function DeviceTypesPage() {
         })
       );
 
-      const usageMap = Object.fromEntries(usageEntries);
-      setUsedMap(usageMap);
+      setUsedMap(Object.fromEntries(usageEntries));
     } catch (e) {
       console.error(e);
     }
@@ -53,7 +52,7 @@ export default function DeviceTypesPage() {
     load();
   }, []);
 
-  // ✅ AGGIUNGI SENZA REFRESH
+  // ✅ ADD STABILE
   const add = async () => {
     if (!name.trim()) return;
 
@@ -61,27 +60,32 @@ export default function DeviceTypesPage() {
     setError(null);
     setMessage(null);
 
-    const res = await apiFetch('/api/device-types', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
-    });
+    try {
+      const res = await apiFetch('/api/device-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
 
-    setLoading(false);
+      setLoading(false);
 
-    if (!res.ok) {
-      setError('Errore durante il salvataggio');
-      return;
+      if (!res.ok) {
+        setError('Errore durante il salvataggio');
+        return;
+      }
+
+      setName('');
+      setMessage('Tipo dispositivo aggiunto');
+
+      await load(); // 🔥 reload DB
+    } catch (e) {
+      console.error(e);
+      setLoading(false);
+      setError('Errore di rete');
     }
-
-    const newItem = await res.json();
-
-    setItems((prev) => [...prev, newItem]);
-    setName('');
-    setMessage('Tipo dispositivo aggiunto con successo');
   };
 
-  // ✅ MODIFICA LIVE
+  // ✅ EDIT
   const startEdit = (item: DeviceType) => {
     setEditingId(item.id);
     setEditingName(item.name);
@@ -90,35 +94,39 @@ export default function DeviceTypesPage() {
   const saveEdit = async () => {
     if (!editingId || !editingName.trim()) return;
 
-    const res = await apiFetch(`/api/device-types/${editingId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: editingName, active: 1 }),
-    });
+    try {
+      const res = await apiFetch(`/api/device-types/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editingName, active: 1 }),
+      });
 
-    if (!res.ok) return;
+      if (!res.ok) return;
 
-    setItems((prev) =>
-      prev.map((x) =>
-        x.id === editingId ? { ...x, name: editingName } : x
-      )
-    );
+      setEditingId(null);
+      setEditingName('');
 
-    setEditingId(null);
-    setEditingName('');
+      await load(); // 🔥 reload DB
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  // ✅ ELIMINA LIVE
+  // ✅ DELETE
   const remove = async (id: number) => {
     if (!confirm('Sei sicuro di eliminare questo tipo dispositivo?')) return;
 
-    const res = await apiFetch(`/api/device-types/${id}`, {
-      method: 'DELETE',
-    });
+    try {
+      const res = await apiFetch(`/api/device-types/${id}`, {
+        method: 'DELETE',
+      });
 
-    if (!res.ok) return;
+      if (!res.ok) return;
 
-    setItems((prev) => prev.filter((x) => x.id !== id));
+      await load(); // 🔥 reload DB
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
