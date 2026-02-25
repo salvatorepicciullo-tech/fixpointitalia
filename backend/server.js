@@ -207,10 +207,10 @@ function initDatabase() {
     console.log('🧩 Alter safe completati');
 
     // 🚨 QUI STA LA FIX VERA
-    db.run('SELECT 1', () => {
-      console.log('📦 Tabelle pronte, avvio seed...');
-      require('./seed')(db);
-    });
+  db.run('SELECT 1', () => {
+  console.log('📦 Tabelle pronte, avvio seed...');
+  require('./seed')(db);
+});
 
   });
 
