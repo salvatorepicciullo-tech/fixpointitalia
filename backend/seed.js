@@ -50,24 +50,25 @@ module.exports = function(db){
       (3,2,85)
     `);
 
-   // =========================
-// 🔥 ADMIN USER
+ // =========================
+// 🔥 ADMIN USER (CREATO SICURO)
 // =========================
-db.run(`
-INSERT OR REPLACE INTO users
-(id,email,password_hash,role,active)
-VALUES
-(
-  1,
-  'admin@fixpoint.it',
-  '$2b$10$9iXxgG9t2lZP7Z1Xc2Rk9eYJ0mRZK0vG6y4C4Gx1k4xF0lY1zqvSe',
-  'admin',
-  1
-)
-`);
+const bcrypt = require('bcrypt');
 
-    console.log('✅ Seed completato con successo');
+const password = 'admin123';
+
+bcrypt.hash(password,10,(err,hash)=>{
+
+  db.run(`
+    INSERT OR REPLACE INTO users
+    (id,email,password_hash,role,active)
+    VALUES (1,'admin@fixpoint.it',?,?,1)
+  `,
+  [hash,'admin'],
+  ()=>{
+
+    console.log('👑 Admin creato: admin@fixpoint.it / admin123');
 
   });
 
-};
+});
