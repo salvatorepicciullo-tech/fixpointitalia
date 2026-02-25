@@ -375,79 +375,93 @@ app.post('/api/admin/promos/upload', auth, upload.single('image'), (req,res)=>{
 });
 
 /* =======================
-   DEVICE TYPES
+   DEVICE TYPES (FIX DEFINITIVO)
 ======================= */
+
+// LIST
 app.get('/api/device-types', (req, res) => {
-  db.all(
-    'SELECT id, name, active FROM device_types ORDER BY name',
-    [],
-    (err, rows) => err ? res.status(500).json([]) : res.json(rows)
-  );
+  db.serialize(() => {
+    db.all(
+      `SELECT id, name, active
+       FROM device_types
+       WHERE active = 1
+       ORDER BY name`,
+      [],
+      (err, rows) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json([]);
+        }
+        res.json(rows || []);
+      }
+    );
+  });
 });
 
-
-
-
+// CREATE
 app.post('/api/device-types', (req, res) => {
   const name = (req.body.name || '').trim();
-  if (!name) return res.status(400).json({ error: 'Nome obbligatorio' });
+  if (!name) {
+    return res.status(400).json({ error: 'Nome obbligatorio' });
+  }
 
-  db.get(
-    'SELECT id, active FROM device_types WHERE LOWER(name)=LOWER(?)',
-    [name],
-    (err, row) => {
-      if (row && row.active === 0)
-        return db.run(
-          'UPDATE device_types SET active=1 WHERE id=?',
-          [row.id],
-          () => res.json({ success: true, reactivated: true })
-        );
-      if (row) return res.status(409).json({ error: 'Tipo già esistente' });
-
-      db.run(
-        'INSERT INTO device_types (name, active) VALUES (?,1)',
-        [name],
-        function () {
-          res.json({
-  id: this.lastID,
-  name,
-  active: 1
-});
+  db.serialize(() => {
+    db.run(
+      `INSERT INTO device_types (name, active)
+       VALUES (?,1)`,
+      [name],
+      function (err) {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ error: true });
         }
-      );
-    }
-  );
-});
 
-app.put('/api/device-types/:id', (req, res) => {
-  db.run(
-    'UPDATE device_types SET name=? WHERE id=?',
-    [req.body.name, req.params.id],
-    function () {
-      this.changes ? res.json({ success: true }) : res.status(404).json({});
-    }
-  );
-});
-
-app.delete('/api/device-types/:id', (req, res) => {
-  db.get(
-    'SELECT COUNT(*) cnt FROM models WHERE device_type_id=?',
-    [req.params.id],
-    (err, row) => {
-      if (row.cnt > 0)
-        return db.run(
-          'UPDATE device_types SET active=0 WHERE id=?',
-          [req.params.id],
-          () => res.json({ success: true, disabled: true })
+        db.get(
+          `SELECT id, name, active
+           FROM device_types
+           WHERE id = ?`,
+          [this.lastID],
+          (_, row) => res.json(row)
         );
-      db.run(
-        'DELETE FROM device_types WHERE id=?',
-        [req.params.id],
-        () => res.json({ success: true })
-      );
-    }
-  );
+      }
+    );
+  });
 });
+
+// UPDATE
+app.put('/api/device-types/:id', (req, res) => {
+  const { name } = req.body;
+
+  db.serialize(() => {
+    db.run(
+      `UPDATE device_types
+       SET name = ?
+       WHERE id = ?`,
+      [name, req.params.id],
+      function (err) {
+        if (err) return res.status(500).json({});
+        res.json({ success: true });
+      }
+    );
+  });
+});
+
+// DELETE (SOFT DELETE SEMPRE)
+app.delete('/api/device-types/:id', (req, res) => {
+  db.serialize(() => {
+    db.run(
+      `UPDATE device_types
+       SET active = 0
+       WHERE id = ?`,
+      [req.params.id],
+      function (err) {
+        if (err) return res.status(500).json({});
+        res.json({ success: true });
+      }
+    );
+  });
+});
+
 
 /* =======================
    BRANDS
