@@ -206,10 +206,25 @@ function initDatabase() {
 
     console.log('🧩 Alter safe completati');
 
-    // 🚨 QUI STA LA FIX VERA
-  db.run('SELECT 1', () => {
-  console.log('📦 Tabelle pronte, avvio seed...');
-  require('./seed')(db);
+  // ✅ SEED SOLO SE DB VUOTO (FIX DEFINITIVO)
+db.get('SELECT COUNT(*) as total FROM device_types', (err,row)=>{
+
+  if(err){
+    console.log('Errore check seed',err);
+    return;
+  }
+
+  if(!row || row.total === 0){
+
+    console.log('🌱 Avvio seed FixPoint (prima installazione)...');
+    require('./seed')(db);
+
+  }else{
+
+    console.log('✅ Seed saltato (DB già popolato)');
+
+  }
+
 });
 
   });
