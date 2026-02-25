@@ -135,7 +135,24 @@ function initDatabase() {
   ];
 
   tables.forEach(sql => db.run(sql));
+
+
+// 🔥 SAFE ALTER DOPO CREAZIONE TABELLE
+db.run(
+  `ALTER TABLE quotes ADD COLUMN description TEXT`,
+  err => {
+    if (err && !err.message.includes('duplicate column')) {
+      console.error('Errore ALTER TABLE quotes:', err.message);
+    }
+  }
+);
+
+
 }
+
+
+
+
 // 🔥 AGGIUNGE PERCENTUALE PREZZO AI FIXPOINT (SAFE)
 db.run(
   `ALTER TABLE fixpoints ADD COLUMN price_percent INTEGER DEFAULT 0`,
