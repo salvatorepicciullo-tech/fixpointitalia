@@ -127,26 +127,39 @@ module.exports = function (db) {
       (3,2,85)
     `);
 
-    // =========================
-    // 👑 ADMIN USER DEFINITIVO
-    // password = admin123
-    // =========================
-    db.run(`
-      INSERT OR REPLACE INTO users
-      (id,email,password_hash,role,active)
-      VALUES
-      (
-        1,
-        'admin@fixpoint.it',
-        '$2b$10$WmZ8w9x7Jm0X6uY9o9VYQe6O9hB7gWkC1x3x9q0V3c5G6G3sQf9bK',
-        'admin',
-        1
-      )
-    `);
+   // =========================
+// 🔥 ADMIN USER SICURO (RESET FORZATO)
+// =========================
 
-    console.log('👑 Admin creato: admin@fixpoint.it / admin123');
+    const password = 'admin123';
+
+    bcrypt.hash(password, 10, (err, hash) => {
+
+      if (err) {
+        console.log('❌ Errore hash admin:', err);
+        return;
+      }
+
+      db.run(`DELETE FROM users WHERE id = 1`, () => {
+
+        db.run(
+          `
+          INSERT INTO users
+          (id,email,password_hash,role,active)
+          VALUES (1,'admin@fixpoint.it',?,?,1)
+          `,
+          [hash, 'admin'],
+          () => {
+            console.log('👑 Admin creato: admin@fixpoint.it / admin123');
+          }
+        );
+
+      });
+
+    });
+
     console.log('✅ Seed completato con successo');
 
-  });
+  }); // ✅ CHIUDE db.serialize
 
-};
+}; // ✅ CHIUDE module.exports
