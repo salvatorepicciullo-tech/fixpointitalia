@@ -209,7 +209,7 @@ function initDatabase() {
     // 🚨 QUI STA LA FIX VERA
     db.run('SELECT 1', () => {
       console.log('📦 Tabelle pronte, avvio seed...');
-      require('./seed');
+      require('./seed')(db);
     });
 
   });
