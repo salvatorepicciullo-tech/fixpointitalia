@@ -209,77 +209,7 @@ function initDatabase() {
   });
 
 }
-// 🔥 SAFE ALTER DOPO CREAZIONE TABELLE
-db.run(
-  `ALTER TABLE quotes ADD COLUMN description TEXT`,
-  err => {
-    if (err && !err.message.includes('duplicate column')) {
-      console.error('Errore ALTER TABLE quotes:', err.message);
-    }
-  }
-);
 
-}
-
-
-
-
-// 🔥 AGGIUNGE PERCENTUALE PREZZO AI FIXPOINT (SAFE)
-db.run(
-  `ALTER TABLE fixpoints ADD COLUMN price_percent INTEGER DEFAULT 0`,
-  err => {
-    if (err && !err.message.includes('duplicate column')) {
-      console.error('Errore ALTER TABLE fixpoints:', err.message);
-    }
-  }
-);
-
-// 🔥 AGGIUNGE DEVICE TYPE ALLE RIPARAZIONI (SAFE)
-db.run(
-  `ALTER TABLE repairs ADD COLUMN device_type_id INTEGER`,
-  err => {
-    if (err && !err.message.includes('duplicate column')) {
-      console.error('Errore ALTER TABLE repairs:', err.message);
-    }
-  }
-);
-
-// 🔥 AGGIUNGE DESCRIPTION AI QUOTES (SAFE)
-db.run(
-  `ALTER TABLE quotes ADD COLUMN description TEXT`,
-  err => {
-    if (err && !err.message.includes('duplicate column')) {
-      console.error('Errore ALTER TABLE quotes:', err.message);
-    }
-  }
-);
-
-/* ===============================
-   PROMO HOMEPAGE
-================================ */
-db.run(`
-CREATE TABLE IF NOT EXISTS promos (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT,
-  description TEXT,
-  image_url TEXT,
-  active INTEGER DEFAULT 1
-)
-`);
-
-db.run(`ALTER TABLE promos ADD COLUMN image_url TEXT`,()=>{});
-db.run(`ALTER TABLE promos ADD COLUMN description TEXT`,()=>{});
-db.run(`ALTER TABLE promos ADD COLUMN is_hero INTEGER DEFAULT 0`,()=>{});
-
-// 🔥 AGGIUNGE IMAGE URL ALLE PROMO (SAFE)
-db.run(
-  `ALTER TABLE promos ADD COLUMN image_url TEXT`,
-  err => {
-    if (err && !err.message.includes('duplicate column')) {
-      console.error('Errore ALTER TABLE promos:', err.message);
-    }
-  }
-);
 
 // =======================
 // DEVICE BASE VALUES
