@@ -54,80 +54,80 @@ export default function DeviceTypesPage() {
 
   // ✅ ADD STABILE
   const add = async () => {
-    if (!name.trim()) return;
+  if (!name.trim()) return;
 
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-
-    try {
-      const res = await apiFetch('/api/device-types', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
-      });
-
-      setLoading(false);
-
-      if (!res.ok) {
-        setError('Errore durante il salvataggio');
-        return;
-      }
-
-      setName('');
-      setMessage('Tipo dispositivo aggiunto');
-
-      await load(); // 🔥 reload DB
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
-      setError('Errore di rete');
-    }
+  const tempItem = {
+    id: Date.now(),
+    name,
+    active: 1,
   };
+
+  setItems((prev) => [...prev, tempItem]); // 🔥 appare subito
+  setName('');
+
+  try {
+    const res = await apiFetch('/api/device-types', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: tempItem.name }),
+    });
+
+    if (!res.ok) throw new Error();
+
+    await load(); // 🔥 sincronizza DB reale
+  } catch (e) {
+    console.error(e);
+    await load();
+  }
+};
 
   // ✅ EDIT
-  const startEdit = (item: DeviceType) => {
-    setEditingId(item.id);
-    setEditingName(item.name);
-  };
+const saveEdit = async () => {
+  if (!editingId || !editingName.trim()) return;
 
-  const saveEdit = async () => {
-    if (!editingId || !editingName.trim()) return;
+  setItems((prev) =>
+    prev.map((x) =>
+      x.id === editingId ? { ...x, name: editingName } : x
+    )
+  );
 
-    try {
-      const res = await apiFetch(`/api/device-types/${editingId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editingName, active: 1 }),
-      });
+  try {
+    const res = await apiFetch(`/api/device-types/${editingId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: editingName, active: 1 }),
+    });
 
-      if (!res.ok) return;
+    if (!res.ok) throw new Error();
 
-      setEditingId(null);
-      setEditingName('');
-
-      await load(); // 🔥 reload DB
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
+    setEditingId(null);
+    setEditingName('');
+    await load();
+  } catch (e) {
+    console.error(e);
+    await load();
+  }
+};
   // ✅ DELETE
-  const remove = async (id: number) => {
-    if (!confirm('Sei sicuro di eliminare questo tipo dispositivo?')) return;
+ const remove = async (id: number) => {
+  if (!confirm('Sei sicuro di eliminare questo tipo dispositivo?')) return;
 
-    try {
-      const res = await apiFetch(`/api/device-types/${id}`, {
-        method: 'DELETE',
-      });
+  const backup = items;
+  setItems((prev) => prev.filter((x) => x.id !== id)); // 🔥 sparisce subito
 
-      if (!res.ok) return;
+  try {
+    const res = await apiFetch(`/api/device-types/${id}`, {
+      method: 'DELETE',
+    });
 
-      await load(); // 🔥 reload DB
-    } catch (e) {
-      console.error(e);
-    }
-  };
+    if (!res.ok) throw new Error();
+
+    await load();
+  } catch (e) {
+    console.error(e);
+    setItems(backup);
+  }
+};
 
   return (
     <div>
