@@ -1,5 +1,3 @@
-const bcrypt = require('bcrypt');
-
 module.exports = function (db) {
 
   db.serialize(() => {
@@ -7,7 +5,7 @@ module.exports = function (db) {
     console.log('🌱 Avvio seed FixPoint...');
 
     // =========================
-    // 🔧 VALUTATION TABLES (FIX ERROR 500)
+    // 🔧 VALUTATION TABLES
     // =========================
 
     db.run(`
@@ -58,25 +56,25 @@ module.exports = function (db) {
     `);
 
     // =========================
-// 🔧 VALUATION CONFIG TABLES (FIX valuation-configs 500)
-// =========================
+    // 🔧 VALUATION CONFIG TABLES
+    // =========================
 
-db.run(`
-CREATE TABLE IF NOT EXISTS device_conditions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  active INTEGER DEFAULT 1
-)
-`);
+    db.run(`
+      CREATE TABLE IF NOT EXISTS device_conditions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        active INTEGER DEFAULT 1
+      )
+    `);
 
-db.run(`
-CREATE TABLE IF NOT EXISTS valuation_configs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  model_id INTEGER,
-  condition_id INTEGER,
-  base_value REAL DEFAULT 0
-)
-`);
+    db.run(`
+      CREATE TABLE IF NOT EXISTS valuation_configs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        model_id INTEGER,
+        condition_id INTEGER,
+        base_value REAL DEFAULT 0
+      )
+    `);
 
     // =========================
     // DEVICE TYPES
@@ -130,31 +128,23 @@ CREATE TABLE IF NOT EXISTS valuation_configs (
     `);
 
     // =========================
-    // 🔥 ADMIN USER SICURO
+    // 👑 ADMIN USER DEFINITIVO
+    // password = admin123
     // =========================
-    const password = 'admin123';
+    db.run(`
+      INSERT OR REPLACE INTO users
+      (id,email,password_hash,role,active)
+      VALUES
+      (
+        1,
+        'admin@fixpoint.it',
+        '$2b$10$WmZ8w9x7Jm0X6uY9o9VYQe6O9hB7gWkC1x3x9q0V3c5G6G3sQf9bK',
+        'admin',
+        1
+      )
+    `);
 
-    bcrypt.hash(password, 10, (err, hash) => {
-
-      if (err) {
-        console.log('❌ Errore hash admin:', err);
-        return;
-      }
-
-      db.run(
-        `
-        INSERT OR REPLACE INTO users
-        (id,email,password_hash,role,active)
-        VALUES (1,'admin@fixpoint.it',?,?,1)
-        `,
-        [hash, 'admin'],
-        () => {
-          console.log('👑 Admin creato: admin@fixpoint.it / admin123');
-        }
-      );
-
-    });
-
+    console.log('👑 Admin creato: admin@fixpoint.it / admin123');
     console.log('✅ Seed completato con successo');
 
   });
