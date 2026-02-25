@@ -8,6 +8,7 @@ export const apiFetch = (path: string, options: RequestInit = {}) => {
 
   return fetch(`${API}${path}`, {
     ...options,
+    cache: 'no-store', // 🔥 DISABILITA CACHE NEXT.JS
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
