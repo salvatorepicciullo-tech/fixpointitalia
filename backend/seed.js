@@ -58,6 +58,27 @@ module.exports = function (db) {
     `);
 
     // =========================
+// 🔧 VALUATION CONFIG TABLES (FIX valuation-configs 500)
+// =========================
+
+db.run(`
+CREATE TABLE IF NOT EXISTS device_conditions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  active INTEGER DEFAULT 1
+)
+`);
+
+db.run(`
+CREATE TABLE IF NOT EXISTS valuation_configs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  model_id INTEGER,
+  condition_id INTEGER,
+  base_value REAL DEFAULT 0
+)
+`);
+
+    // =========================
     // DEVICE TYPES
     // =========================
     db.run(`
