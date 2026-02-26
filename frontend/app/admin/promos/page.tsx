@@ -3,98 +3,159 @@
 import { useEffect, useState } from 'react';
 
 type Promo = {
-  id:number;
-  title:string;
-  image_url:string;
-  active:number;
+  id: number;
+  title: string;
+  image_url: string;
+  active: number;
 };
 
-export default function AdminPromosPage(){
+export default function AdminPromosPage() {
 
   const API = process.env.NEXT_PUBLIC_API_URL;
+
+  const [items, setItems] = useState<Promo[]>([]);
+  const [title, setTitle] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+
   const token =
     typeof window !== 'undefined'
       ? localStorage.getItem('token')
       : null;
 
-  const [items,setItems] = useState<Promo[]>([]);
-  const [title,setTitle] = useState('');
-  const [file,setFile] = useState<File|null>(null);
+  /* ================= LOAD ================= */
 
-  // LOAD
   const load = async () => {
-    const res = await fetch(`${API}/api/admin/promos`,{
-      headers:{ Authorization:`Bearer ${token}` }
-    });
-    if(res.ok) setItems(await res.json());
+    if (!API || !token) return;
+
+    try {
+      const res = await fetch(`${API}/api/admin/promos`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        cache: 'no-store'
+      });
+
+      if (!res.ok) throw new Error('Load promos failed');
+
+      const data = await res.json();
+      setItems([...data]); // 🔥 forza render
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  useEffect(()=>{ load(); },[]);
+  useEffect(() => {
+    load();
+  }, []);
 
-  // ADD PROMO 🔥 LIVE UPDATE
+  /* ================= ADD PROMO ================= */
+
   const addPromo = async () => {
 
-    if(!file) return alert('Seleziona immagine');
+    if (!file) {
+      alert('Seleziona immagine');
+      return;
+    }
+
+    if (!API || !token) return;
 
     const formData = new FormData();
-    formData.append('title',title);
-    formData.append('image',file);
+    formData.append('title', title);
+    formData.append('image', file);
 
-    const res = await fetch(`${API}/api/admin/promos/upload`,{
-      method:'POST',
-      headers:{
-        Authorization:`Bearer ${token}`
-      },
-      body:formData
-    });
+    try {
+      const res = await fetch(`${API}/api/admin/promos/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      });
 
-  if(res.ok){
+      if (!res.ok) throw new Error('Upload failed');
 
-  const newPromo = await res.json();
+      const newPromo = await res.json();
 
-  // 🔥 AGGIUNTA LIVE ADMIN
-  setItems(prev=>[newPromo,...prev]);
+      // 🔥 UPDATE LIVE ADMIN
+      setItems(prev => [newPromo, ...prev]);
 
-  // ✅ QUESTA È LA RIGA IMPORTANTISSIMA
-  window.dispatchEvent(new Event('promo-updated'));
-const bc = new BroadcastChannel('fixpoint-promos');
-bc.postMessage('updated');
+      // 🔥 UPDATE HOMEPAGE IN REALTIME
+      window.dispatchEvent(new Event('promo-updated'));
 
-  setTitle('');
-  setFile(null);
-}
+      const bc = new BroadcastChannel('fixpoint-promos');
+      bc.postMessage('updated');
+      bc.close();
+
+      setTitle('');
+      setFile(null);
+
+    } catch (e) {
+      console.error(e);
+      alert('Errore upload promo');
+    }
   };
 
-  const toggle = async(id:number,active:number)=>{
+  /* ================= TOGGLE ================= */
 
-    await fetch(`${API}/api/admin/promos/${id}`,{
-      method:'PUT',
-      headers:{
-        'Content-Type':'application/json',
-        Authorization:`Bearer ${token}`
-      },
-      body:JSON.stringify({active: active ? 0:1})
-    });
+  const toggle = async (id: number, active: number) => {
 
-    setItems(prev=>
-      prev.map(p=>p.id===id?{...p,active: p.active?0:1}:p)
-    );
+    if (!API || !token) return;
+
+    try {
+      await fetch(`${API}/api/admin/promos/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ active: active ? 0 : 1 })
+      });
+
+      setItems(prev =>
+        prev.map(p =>
+          p.id === id
+            ? { ...p, active: p.active ? 0 : 1 }
+            : p
+        )
+      );
+
+      window.dispatchEvent(new Event('promo-updated'));
+
+    } catch (e) {
+      console.error(e);
+    }
   };
 
- const remove = async(id:number)=>{
+  /* ================= DELETE ================= */
 
-  await fetch(`${API}/api/admin/promos/${id}`,{
-    method:'DELETE',
-    headers:{ Authorization:`Bearer ${token}` }
-  });
+  const remove = async (id: number) => {
 
-  setItems(prev=>prev.filter(p=>p.id!==id));
+    if (!API || !token) return;
 
-  // 🚀 FIXPOINT LIVE UPDATE
-  window.dispatchEvent(new Event('promo-updated'));
-};
+    try {
+      await fetch(`${API}/api/admin/promos/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-  return(
+      setItems(prev => prev.filter(p => p.id !== id));
+
+      window.dispatchEvent(new Event('promo-updated'));
+
+      const bc = new BroadcastChannel('fixpoint-promos');
+      bc.postMessage('updated');
+      bc.close();
+
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  /* ================= RENDER ================= */
+
+  return (
     <div className="max-w-4xl">
 
       <h1 className="text-2xl font-semibold mb-6">
@@ -106,7 +167,7 @@ bc.postMessage('updated');
 
         <input
           value={title}
-          onChange={e=>setTitle(e.target.value)}
+          onChange={e => setTitle(e.target.value)}
           placeholder="Titolo promo"
           className="border px-4 py-2 rounded-xl w-full"
         />
@@ -114,8 +175,8 @@ bc.postMessage('updated');
         <input
           type="file"
           accept="image/*"
-          onChange={e=>{
-            if(e.target.files?.[0])
+          onChange={e => {
+            if (e.target.files?.[0])
               setFile(e.target.files[0]);
           }}
         />
@@ -131,9 +192,10 @@ bc.postMessage('updated');
 
       {/* LIST */}
       <div className="space-y-4">
-        {items.map(p=>(
+        {items.map(p => (
 
-          <div key={p.id}
+          <div
+            key={p.id}
             className="flex gap-4 items-center bg-white border rounded-xl p-4"
           >
 
@@ -147,19 +209,19 @@ bc.postMessage('updated');
             <div className="flex-1">
               <div className="font-semibold">{p.title}</div>
               <div className="text-xs text-gray-400">
-                {p.active ? 'Attiva':'Disattiva'}
+                {p.active ? 'Attiva' : 'Disattiva'}
               </div>
             </div>
 
             <button
-              onClick={()=>toggle(p.id,p.active)}
+              onClick={() => toggle(p.id, p.active)}
               className="bg-yellow-100 px-3 py-1 rounded"
             >
               Toggle
             </button>
 
             <button
-              onClick={()=>remove(p.id)}
+              onClick={() => remove(p.id)}
               className="bg-red-100 px-3 py-1 rounded"
             >
               Elimina

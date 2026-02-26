@@ -36,7 +36,7 @@ export default function DeviceTypesPage() {
 
       const data = await res.json();
 
-      setItems(data);
+      setItems([...data]);
 
     };
 

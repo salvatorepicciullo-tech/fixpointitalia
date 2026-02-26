@@ -35,14 +35,19 @@ export default function PricesPage() {
   /* ================= BASE ================= */
 
   useEffect(()=>{
-    apiFetch('/api/device-types').then(r=>r.json()).then(setDeviceTypes);
-    apiFetch('/api/brands').then(r=>r.json()).then(setBrands);
+    apiFetch('/api/device-types',{cache:'no-store'})
+      .then(r=>r.json())
+      .then(data=>setDeviceTypes([...data]));
+
+    apiFetch('/api/brands',{cache:'no-store'})
+      .then(r=>r.json())
+      .then(data=>setBrands([...data]));
   },[]);
 
   useEffect(()=>{
-    apiFetch(`/api/repairs?device_type_id=${deviceTypeId ?? ''}`)
+    apiFetch(`/api/repairs?device_type_id=${deviceTypeId ?? ''}`,{cache:'no-store'})
       .then(r=>r.json())
-      .then(setRepairs);
+      .then(data=>setRepairs([...data]));
   },[deviceTypeId]);
 
   useEffect(()=>{
@@ -53,11 +58,11 @@ export default function PricesPage() {
       return;
     }
 
-    apiFetch(`/api/models?device_type_id=${deviceTypeId}&brand_id=${brandId}`)
+    apiFetch(`/api/models?device_type_id=${deviceTypeId}&brand_id=${brandId}`,{cache:'no-store'})
       .then(r=>r.json())
       .then(data=>{
-        setModels(data);
-        setFilteredModels(data);
+        setModels([...data]);
+        setFilteredModels([...data]);
       });
 
   },[deviceTypeId,brandId]);
@@ -76,10 +81,13 @@ export default function PricesPage() {
   /* ================= LOAD LISTINO MODELLO ================= */
 
   const reloadPrices = async(id:number)=>{
-    const res = await apiFetch(`/api/model-repairs?model_id=${id}`);
+    const res = await apiFetch(`/api/model-repairs?model_id=${id}`,{
+      cache:'no-store'
+    });
+
     const rows:PriceRow[] = await res.json();
 
-    setPrices(rows);
+    setPrices([...rows]);
 
     const map:Record<number,string> = {};
     rows.forEach(r=> map[r.repair_id]=String(r.price));
@@ -206,86 +214,65 @@ export default function PricesPage() {
 
       </div>
 
-      {/* LISTA MODELLI */}
-      {deviceTypeId && brandId && filteredModels.length>0 &&(
-        <div className="mb-6 border rounded-xl bg-white shadow-sm max-h-72 overflow-auto">
-          {filteredModels.map(m=>(
-            <div
-              key={m.id}
-              onClick={()=>{
-                setModelId(m.id);
-                setModelSearch(m.name);
-              }}
-              className={`px-4 py-2 cursor-pointer border-b last:border-0 ${
-                modelId===m.id?'bg-blue-100 font-semibold':'hover:bg-gray-50'
-              }`}
-            >
-              {m.name}
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* LISTINO MODELLO */}
       {modelId && (
         <div className="space-y-3">
 
          {repairs
-  .sort((a,b)=>a.name.localeCompare(b.name))
-  .map(r=>{
+          .sort((a,b)=>a.name.localeCompare(b.name))
+          .map(r=>{
 
-    const priceRow = prices.find(p=>p.repair_id===r.id);
-    const empty = !priceMap[r.id];
+            const priceRow = prices.find(p=>p.repair_id===r.id);
+            const empty = !priceMap[r.id];
 
-    return(
-      <div
-        key={r.id}
-        className={`flex items-center justify-between p-4 rounded-xl border shadow-sm ${
-          empty?'bg-red-50 border-red-200':'bg-white'
-        }`}
-      >
+            return(
+              <div
+                key={r.id}
+                className={`flex items-center justify-between p-4 rounded-xl border shadow-sm ${
+                  empty?'bg-red-50 border-red-200':'bg-white'
+                }`}
+              >
 
-        <span className="font-medium">{r.name}</span>
+                <span className="font-medium">{r.name}</span>
 
-        <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3">
 
-          <input
-            className="border px-3 py-2 rounded w-32"
-            placeholder="€"
-            value={priceMap[r.id] ?? ''}
-            onChange={e=>setPriceMap(prev=>({...prev,[r.id]:e.target.value}))}
-            onBlur={()=>savePrice(r.id)}
-          />
+                  <input
+                    className="border px-3 py-2 rounded w-32"
+                    placeholder="€"
+                    value={priceMap[r.id] ?? ''}
+                    onChange={e=>setPriceMap(prev=>({...prev,[r.id]:e.target.value}))}
+                    onBlur={()=>savePrice(r.id)}
+                  />
 
-          <button
-            className="px-2 py-1 text-xs bg-blue-500 text-white rounded"
-            onClick={()=>savePrice(r.id)}
-          >
-            Modifica
-          </button>
+                  <button
+                    className="px-2 py-1 text-xs bg-blue-500 text-white rounded"
+                    onClick={()=>savePrice(r.id)}
+                  >
+                    Modifica
+                  </button>
 
-          {priceRow && (
-            <button
-              className="px-2 py-1 text-xs bg-red-500 text-white rounded"
-              onClick={()=>deleteRow(priceRow.id)}
-            >
-              Elimina
-            </button>
-          )}
+                  {priceRow && (
+                    <button
+                      className="px-2 py-1 text-xs bg-red-500 text-white rounded"
+                      onClick={()=>deleteRow(priceRow.id)}
+                    >
+                      Elimina
+                    </button>
+                  )}
 
-          {savingId===r.id &&(
-            <span className="text-xs text-green-600 font-semibold">
-              Salvato
-            </span>
-          )}
+                  {savingId===r.id &&(
+                    <span className="text-xs text-green-600 font-semibold">
+                      Salvato
+                    </span>
+                  )}
 
-        </div>
+                </div>
 
-      </div>
-    );
+              </div>
+            );
 
-  })}
-
+          })}
 
         </div>
       )}

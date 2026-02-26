@@ -661,6 +661,29 @@ app.delete('/api/models/:id', (req, res) => {
 });
 
 /* =======================
+   temporaneo per pulire db
+======================= */
+app.post('/api/admin/repairs/cleanup', (req, res) => {
+  db.run(
+    'DELETE FROM repairs WHERE device_type_id IS NULL',
+    function (err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Errore cleanup' });
+      }
+      res.json({
+        success: true,
+        deleted: this.changes
+      });
+    }
+  );
+});
+
+
+
+
+
+/* =======================
    ADMIN – IMPORT TEMPLATE REPAIRS
 ======================= */
 
@@ -761,16 +784,20 @@ app.get('/api/repairs', (req, res) => {
   const { device_type_id } = req.query;
 
   let sql = `
-    SELECT id, name, active
+    SELECT id, name, active, device_type_id
     FROM repairs
     WHERE active = 1
   `;
 
   const params = [];
 
+  // 🔥 MOSTRA SOLO QUELLE DEL DEVICE TYPE
   if (device_type_id) {
     sql += ` AND device_type_id = ?`;
     params.push(device_type_id);
+  } else {
+    // 🚨 se NON filtro → NON mostra quelle senza device_type
+    sql += ` AND device_type_id IS NOT NULL`;
   }
 
   sql += ` ORDER BY name`;
@@ -784,7 +811,6 @@ app.get('/api/repairs', (req, res) => {
   });
 
 });
-
 app.post('/api/repairs', (req, res) => {
 
   const name = (req.body.name || '').trim();

@@ -50,19 +50,19 @@ export default function BrandsPage() {
     setName('');
 
     try {
-      const res = await apiFetch('/api/brands', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: temp.name }),
-      });
+  const res = await apiFetch('/api/brands', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: temp.name }),
+  });
 
-      if (!res.ok) throw new Error();
+  if (!res.ok) throw new Error();
 
-      await load();
-    } catch (e) {
-      console.error(e);
-      await load();
-    }
+  setTimeout(load, 300);
+} catch (e) {
+  console.error(e);
+  setTimeout(load, 300);
+}
   };
 
   // avvia modifica
@@ -82,22 +82,22 @@ export default function BrandsPage() {
       )
     );
 
-    try {
-      const res = await apiFetch(`/api/brands/${editingId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editingName, active: 1 }),
-      });
+   try {
+  const res = await apiFetch(`/api/brands/${editingId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: editingName, active: 1 }),
+  });
 
-      if (!res.ok) throw new Error();
+  if (!res.ok) throw new Error();
 
-      setEditingId(null);
-      setEditingName('');
-      await load();
-    } catch (e) {
-      console.error(e);
-      await load();
-    }
+  setEditingId(null);
+  setEditingName('');
+  setTimeout(load, 300);
+} catch (e) {
+  console.error(e);
+  setTimeout(load, 300);
+}
   };
 
   // ✅ DELETE ISTANTANEO
@@ -110,17 +110,17 @@ export default function BrandsPage() {
     setItems((prev) => prev.filter((x) => x.id !== id));
 
     try {
-      const res = await apiFetch(`/api/brands/${id}`, {
-        method: 'DELETE',
-      });
+  const res = await apiFetch(`/api/brands/${id}`, {
+    method: 'DELETE',
+  });
 
-      if (!res.ok) throw new Error();
+  if (!res.ok) throw new Error();
 
-      await load();
-    } catch (e) {
-      console.error(e);
-      setItems(backup);
-    }
+  setTimeout(load, 300);
+} catch (e) {
+  console.error(e);
+  setItems(backup);
+}
   };
 
   return (
