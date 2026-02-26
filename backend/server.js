@@ -39,9 +39,10 @@ const transporter = nodemailer.createTransport({
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://fixpointitalia.vercel.app'
+  'https://fixpointitalia.vercel.app',
+  'https://fixpointitalia.com',
+  'https://www.fixpointitalia.com'
 ];
-
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
