@@ -11,31 +11,58 @@ type Brand = {
 export default function BrandsPage() {
   const [items, setItems] = useState<Brand[]>([]);
   const [name, setName] = useState('');
+
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState('');
 
+  // 🔥 LOAD STABILE DAL DB (NO CACHE NEXT)
   const load = async () => {
-    const res = await apiFetch('/api/brands');
-    const data = await res.json();
-    setItems(data);
+    try {
+      const res = await apiFetch('/api/brands', {
+        cache: 'no-store',
+      });
+
+      const data = await res.json();
+
+      // forza render react
+      setItems([...data]);
+    } catch (e) {
+      console.error('LOAD BRANDS ERROR', e);
+    }
   };
 
   useEffect(() => {
     load();
   }, []);
 
-  // aggiunge
+  // ✅ ADD ISTANTANEO
   const add = async () => {
     if (!name.trim()) return;
 
-    await apiFetch('/api/brands', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
-    });
+    const temp = {
+      id: Date.now(),
+      name,
+      active: 1,
+    };
 
+    // appare subito
+    setItems((prev) => [...prev, temp]);
     setName('');
-    load();
+
+    try {
+      const res = await apiFetch('/api/brands', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: temp.name }),
+      });
+
+      if (!res.ok) throw new Error();
+
+      await load();
+    } catch (e) {
+      console.error(e);
+      await load();
+    }
   };
 
   // avvia modifica
@@ -44,30 +71,56 @@ export default function BrandsPage() {
     setEditingName(item.name);
   };
 
-  // salva modifica
+  // ✅ SAVE EDIT ISTANTANEO
   const saveEdit = async () => {
     if (!editingId || !editingName.trim()) return;
 
-    await apiFetch(`/api/brands/${editingId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: editingName, active: 1 }),
-    });
+    // update UI immediato
+    setItems((prev) =>
+      prev.map((x) =>
+        x.id === editingId ? { ...x, name: editingName } : x
+      )
+    );
 
-    setEditingId(null);
-    setEditingName('');
-    load();
+    try {
+      const res = await apiFetch(`/api/brands/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editingName, active: 1 }),
+      });
+
+      if (!res.ok) throw new Error();
+
+      setEditingId(null);
+      setEditingName('');
+      await load();
+    } catch (e) {
+      console.error(e);
+      await load();
+    }
   };
 
-  // elimina
+  // ✅ DELETE ISTANTANEO
   const remove = async (id: number) => {
     if (!confirm('Sei sicuro di eliminare questa marca?')) return;
 
-    await apiFetch(`/api/brands/${id}`, {
-      method: 'DELETE',
-    });
+    const backup = items;
 
-    load();
+    // sparisce subito
+    setItems((prev) => prev.filter((x) => x.id !== id));
+
+    try {
+      const res = await apiFetch(`/api/brands/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) throw new Error();
+
+      await load();
+    } catch (e) {
+      console.error(e);
+      setItems(backup);
+    }
   };
 
   return (

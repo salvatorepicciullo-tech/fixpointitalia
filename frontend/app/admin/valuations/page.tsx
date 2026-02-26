@@ -1,7 +1,7 @@
 'use client';
 
 import { apiFetch } from '@/lib/api'
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 
 type ValuationStatus = 'NEW' | 'SEEN' | 'IN_CONTACT' | 'CLOSED';
 
@@ -34,7 +34,7 @@ export default function AdminValuationsPage() {
   /* =======================
    LOAD DATA
 ======================= */
-const load = async () => {
+const load = useCallback(async () => {
   try {
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -54,8 +54,7 @@ const load = async () => {
   } finally {
     setLoading(false);
   }
-};
-
+}, []);
 useEffect(() => {
 
   load(); // primo caricamento
@@ -68,8 +67,7 @@ useEffect(() => {
 
   return () => clearInterval(interval);
 
-}, []);
-
+}, [load]);
   /* =======================
      UPDATE STATUS
   ======================= */
