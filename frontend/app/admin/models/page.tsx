@@ -1,3 +1,9 @@
+export const dynamic = 'force-dynamic';
+
+'use client';
+
+import { apiFetch } from '@/lib/api';
+...
 'use client';
 
 import { apiFetch } from '@/lib/api';
