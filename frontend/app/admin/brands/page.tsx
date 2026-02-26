@@ -1,4 +1,7 @@
 'use client';
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 import { apiFetch } from '@/lib/api';
 import { useEffect, useState } from 'react';
 
@@ -11,58 +14,31 @@ type Brand = {
 export default function BrandsPage() {
   const [items, setItems] = useState<Brand[]>([]);
   const [name, setName] = useState('');
-
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState('');
 
-  // 🔥 LOAD STABILE DAL DB (NO CACHE NEXT)
   const load = async () => {
-    try {
-      const res = await apiFetch('/api/brands', {
-        cache: 'no-store',
-      });
-
-      const data = await res.json();
-
-      // forza render react
-      setItems([...data]);
-    } catch (e) {
-      console.error('LOAD BRANDS ERROR', e);
-    }
+    const res = await apiFetch('/api/brands');
+    const data = await res.json();
+    setItems(data);
   };
 
   useEffect(() => {
     load();
   }, []);
 
-  // ✅ ADD ISTANTANEO
+  // aggiunge
   const add = async () => {
     if (!name.trim()) return;
 
-    const temp = {
-      id: Date.now(),
-      name,
-      active: 1,
-    };
+    await apiFetch('/api/brands', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
 
-    // appare subito
-    setItems((prev) => [...prev, temp]);
     setName('');
-
-    try {
-  const res = await apiFetch('/api/brands', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: temp.name }),
-  });
-
-  if (!res.ok) throw new Error();
-
-  setTimeout(load, 300);
-} catch (e) {
-  console.error(e);
-  setTimeout(load, 300);
-}
+    load();
   };
 
   // avvia modifica
@@ -71,56 +47,30 @@ export default function BrandsPage() {
     setEditingName(item.name);
   };
 
-  // ✅ SAVE EDIT ISTANTANEO
+  // salva modifica
   const saveEdit = async () => {
     if (!editingId || !editingName.trim()) return;
 
-    // update UI immediato
-    setItems((prev) =>
-      prev.map((x) =>
-        x.id === editingId ? { ...x, name: editingName } : x
-      )
-    );
+    await apiFetch(`/api/brands/${editingId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: editingName, active: 1 }),
+    });
 
-   try {
-  const res = await apiFetch(`/api/brands/${editingId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: editingName, active: 1 }),
-  });
-
-  if (!res.ok) throw new Error();
-
-  setEditingId(null);
-  setEditingName('');
-  setTimeout(load, 300);
-} catch (e) {
-  console.error(e);
-  setTimeout(load, 300);
-}
+    setEditingId(null);
+    setEditingName('');
+    load();
   };
 
-  // ✅ DELETE ISTANTANEO
+  // elimina
   const remove = async (id: number) => {
     if (!confirm('Sei sicuro di eliminare questa marca?')) return;
 
-    const backup = items;
+    await apiFetch(`/api/brands/${id}`, {
+      method: 'DELETE',
+    });
 
-    // sparisce subito
-    setItems((prev) => prev.filter((x) => x.id !== id));
-
-    try {
-  const res = await apiFetch(`/api/brands/${id}`, {
-    method: 'DELETE',
-  });
-
-  if (!res.ok) throw new Error();
-
-  setTimeout(load, 300);
-} catch (e) {
-  console.error(e);
-  setItems(backup);
-}
+    load();
   };
 
   return (
