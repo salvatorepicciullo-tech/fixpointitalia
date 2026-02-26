@@ -34,13 +34,33 @@ const transporter = nodemailer.createTransport({
   }
 });
 /* =======================
-   MIDDLEWARE
+   CORS FIX PRODUZIONE
 ======================= */
+
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://fixpointitalia.vercel.app'
+];
+
 app.use(cors({
-  origin: true,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
+
+app.options('*', cors());
+
+
 app.use(express.json());
+
+
 // 🔥 SERVE FILE STATICI UPLOAD
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 /* ===============================
