@@ -36,30 +36,49 @@ export default function ModelsPage() {
       .then(setBrands);
   }, []);
 
-  /* =========================
-     LOAD MODELS
-  ========================= */
-  const loadModels = useCallback(async (dtId: number, bId: number) => {
-    try {
-      const res = await apiFetch(
-        `/api/models?device_type_id=${dtId}&brand_id=${bId}`,
-        { cache: 'no-store' }
-      );
+ /* =========================
+   LOAD MODELS
+========================= */
+const loadModels = useCallback(async (dtId: number, bId: number) => {
+  try {
+    const res = await apiFetch(
+      `/api/models?device_type_id=${dtId}&brand_id=${bId}`
+    );
 
-      const data = await res.json();
-      setModels([...data]); // 🔥 forza rerender
-    } catch (e) {
-      console.error('LOAD MODELS ERROR', e);
-    }
-  }, []);
+    if (!res.ok) throw new Error();
 
-  useEffect(() => {
-    if (!deviceTypeId || !brandId) {
-      setModels([]);
-      return;
-    }
-    loadModels(deviceTypeId, brandId);
-  }, [deviceTypeId, brandId, loadModels]);
+    const data: Model[] = await res.json();
+
+    setModels(prev => {
+      // Se prev contiene modelli che la GET ancora non ha
+      const prevIds = new Set(prev.map(m => m.id));
+      const dataIds = new Set(data.map(m => m.id));
+
+      const hasLocalOnly = [...prevIds].some(id => !dataIds.has(id));
+
+      if (hasLocalOnly) {
+        return prev; // 🔥 non sovrascrivere
+      }
+
+      return data;
+    });
+
+  } catch (e) {
+    console.error('LOAD MODELS ERROR', e);
+  }
+}, []);
+/* =========================
+   LOAD WHEN FILTER CHANGES
+========================= */
+useEffect(() => {
+  if (!deviceTypeId || !brandId) {
+    setModels([]);
+    return;
+  }
+
+  loadModels(deviceTypeId, brandId);
+}, [deviceTypeId, brandId]);
+
 
 /* =========================
    ADD MODEL (DEFINITIVO NO REFLASH)
