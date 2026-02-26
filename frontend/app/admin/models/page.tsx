@@ -61,43 +61,35 @@ export default function ModelsPage() {
     loadModels(deviceTypeId, brandId);
   }, [deviceTypeId, brandId, loadModels]);
 
-  /* =========================
-     ADD MODEL (optimistic)
-  ========================= */
-  const addModel = async () => {
-    if (!modelName || !deviceTypeId || !brandId) return;
+/* =========================
+   ADD MODEL (DEFINITIVO NO REFLASH)
+========================= */
+const addModel = async () => {
+  if (!modelName || !deviceTypeId || !brandId) return;
 
-    const temp: Model = {
-      id: Date.now(),
-      name: modelName,
-      device_type_id: deviceTypeId,
-      brand_id: brandId,
-    };
+  try {
+    const res = await apiFetch('/api/models', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: modelName,
+        device_type_id: deviceTypeId,
+        brand_id: brandId,
+      }),
+    });
 
-    // 🔥 appare subito
-    setModels(prev => [...prev, temp]);
+    if (!res.ok) throw new Error();
+
+    const newModel: Model = await res.json();
+
+    // ✅ update diretto stato locale
+    setModels(prev => [...prev, newModel]);
+
     setModelName('');
-
-    try {
-      const res = await apiFetch('/api/models', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: temp.name,
-          device_type_id: deviceTypeId,
-          brand_id: brandId,
-        }),
-      });
-
-      if (!res.ok) throw new Error();
-
-      setTimeout(() => loadModels(deviceTypeId, brandId), 300);
-    } catch (e) {
-      console.error(e);
-      setTimeout(() => loadModels(deviceTypeId, brandId), 300);
-    }
-  };
-
+  } catch (e) {
+    console.error(e);
+  }
+};
   /* =========================
      IMPORT SINGOLO
   ========================= */
@@ -146,7 +138,7 @@ export default function ModelsPage() {
     setImporting(false);
 
     alert(`Import completato ✅\nNuovi: ${inserted}\nDuplicati: ${skipped}`);
-    setTimeout(() => loadModels(deviceTypeId, brandId), 300);
+    await loadModels(deviceTypeId, brandId);
   };
 
   /* =========================
@@ -211,9 +203,9 @@ export default function ModelsPage() {
 
     alert(`Import MULTI 🚀\nNuovi: ${inserted}\nDuplicati: ${skipped}`);
 
-    if (deviceTypeId && brandId) {
-      setTimeout(() => loadModels(deviceTypeId, brandId), 300);
-    }
+   if (deviceTypeId && brandId) {
+  await loadModels(deviceTypeId, brandId);
+}
   };
 
   /* =========================
@@ -248,29 +240,30 @@ export default function ModelsPage() {
     }
   };
 
-  /* =========================
-     DELETE
-  ========================= */
-  const remove = async (id: number) => {
-    if (!confirm('Sei sicuro di eliminare questo modello?')) return;
+/* =========================
+   DELETE (DEFINITIVO NO REFLASH)
+========================= */
+const remove = async (id: number) => {
+  if (!confirm('Sei sicuro di eliminare questo modello?')) return;
 
-    const backup = models;
+  const backup = models;
 
-    setModels(prev => prev.filter(m => m.id !== id));
+  // ✅ sparisce subito
+  setModels(prev => prev.filter(m => m.id !== id));
 
-    try {
-      await apiFetch(`/api/models/${id}`, {
-        method: 'DELETE',
-      });
+  try {
+    const res = await apiFetch(`/api/models/${id}`, {
+      method: 'DELETE',
+    });
 
-      if (deviceTypeId && brandId) {
-        setTimeout(() => loadModels(deviceTypeId, brandId), 300);
-      }
-    } catch (e) {
-      console.error(e);
-      setModels(backup);
-    }
-  };
+    if (!res.ok) throw new Error();
+  } catch (e) {
+    console.error(e);
+    // rollback in caso di errore
+    setModels(backup);
+  }
+};
+
 
   return (
     <div>
