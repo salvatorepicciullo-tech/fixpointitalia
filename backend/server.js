@@ -758,26 +758,32 @@ app.post('/api/admin/import-repair-template', (req, res) => {
 
 app.get('/api/repairs', (req, res) => {
 
-  // 🔥 LISTA RIPARAZIONI GLOBALE (UGUALE PER TUTTI I DISPOSITIVI)
-  db.all(
-    `
+  const { device_type_id } = req.query;
+
+  let sql = `
     SELECT id, name, active
     FROM repairs
     WHERE active = 1
-    ORDER BY name
-    `,
-    [],
-    (err, rows) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json([]);
-      }
-      res.json(rows);
+  `;
+
+  const params = [];
+
+  if (device_type_id) {
+    sql += ` AND device_type_id = ?`;
+    params.push(device_type_id);
+  }
+
+  sql += ` ORDER BY name`;
+
+  db.all(sql, params, (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json([]);
     }
-  );
+    res.json(rows || []);
+  });
 
 });
-
 
 app.post('/api/repairs', (req, res) => {
 
