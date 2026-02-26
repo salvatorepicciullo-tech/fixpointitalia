@@ -623,7 +623,16 @@ db.all(
       stmt.finalize();
     }
 
-    res.json({ success: true, id: newModelId });
+    db.get(
+  'SELECT id, name FROM models WHERE id = ?',
+  [newModelId],
+  (err2, row) => {
+    if (err2 || !row) {
+      return res.status(500).json({ error: true });
+    }
+    res.json(row);
+  }
+);
 
   }
 );
