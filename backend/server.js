@@ -2,8 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const dbPath = path.join(__dirname, 'fixpoint.db');
-const bcrypt = require('bcrypt');
+
+// 🔥 FIXPOINT DATABASE PATH DEFINITIVO (VOLUME PERSISTENTE RAILWAY)
+const dbPath =
+  process.env.RAILWAY_ENVIRONMENT
+    ? '/app/data/fixpoint.db'   // ✅ PRODUZIONE (volume persistente)
+    : path.join(__dirname, 'fixpoint.db'); // ✅ LOCALE
+
+console.log('USING DATABASE FILE:', dbPath);const bcrypt = require('bcrypt');
 const PDFDocument = require('pdfkit');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = 'fixpoint_super_secret'; // poi lo spostiamo in env
