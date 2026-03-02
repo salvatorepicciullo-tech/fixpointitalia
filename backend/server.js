@@ -2254,7 +2254,7 @@ app.get('/api/stats/overview', (req, res) => {
 (SELECT COUNT(*) FROM quotes WHERE status='DONE') AS done_count,
 
 /* 💰 TOTALE SOLO PREVENTIVI CHIUSI */
-(SELECT IFNULL(SUM(price),0) FROM quotes WHERE status='DONE') AS total_amount,
+(SELECT COALESCE(SUM(price),0) FROM quotes WHERE status='DONE') AS total_amount,
 
       /* ===== VALUTAZIONI ===== */
       (SELECT COUNT(*) FROM device_valuations) AS valuations_total,
