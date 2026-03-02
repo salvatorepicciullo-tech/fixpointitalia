@@ -2240,38 +2240,31 @@ app.get('/api/fixpoint/quotes', (req, res) => {
 /* =======================
    STATISTICHE (READ ONLY)
 ======================= */
-app.get('/api/stats/overview', (req, res) => {
-  db.get(
-    `
-    SELECT
-     /* ===== QUOTES ===== */
-(SELECT COUNT(*) FROM quotes) AS total,
+app.get('/api/stats/overview', async (req, res) => {
+  try {
 
-(SELECT COUNT(*) FROM quotes WHERE status='ASSIGNED') AS assigned_count,
+    const result = await db.query(`
+      SELECT
+        (SELECT COUNT(*) FROM quotes) AS total,
+        (SELECT COUNT(*) FROM quotes WHERE status='ASSIGNED') AS assigned_count,
+        (SELECT COUNT(*) FROM quotes WHERE status='IN_PROGRESS') AS working_count,
+        (SELECT COUNT(*) FROM quotes WHERE status='DONE') AS done_count,
+        (SELECT COALESCE(SUM(price),0) FROM quotes WHERE status='DONE') AS total_amount,
+        (SELECT COUNT(*) FROM device_valuations) AS valuations_total,
+        (SELECT COUNT(*) FROM device_valuations WHERE status='NEW') AS valuations_new,
+        (SELECT COUNT(*) FROM device_valuations WHERE status='IN_CONTACT') AS valuations_contact,
+        (SELECT COUNT(*) FROM device_valuations WHERE status='CLOSED') AS valuations_closed
+    `);
 
-(SELECT COUNT(*) FROM quotes WHERE status='IN_PROGRESS') AS working_count,
+    res.json(result.rows[0]);
 
-(SELECT COUNT(*) FROM quotes WHERE status='DONE') AS done_count,
-
-/* 💰 TOTALE SOLO PREVENTIVI CHIUSI */
-(SELECT COALESCE(SUM(price),0) FROM quotes WHERE status='DONE') AS total_amount,
-
-      /* ===== VALUTAZIONI ===== */
-      (SELECT COUNT(*) FROM device_valuations) AS valuations_total,
-      (SELECT COUNT(*) FROM device_valuations WHERE status='NEW') AS valuations_new,
-      (SELECT COUNT(*) FROM device_valuations WHERE status='IN_CONTACT') AS valuations_contact,
-      (SELECT COUNT(*) FROM device_valuations WHERE status='CLOSED') AS valuations_closed
-    `,
-    [],
-    (err, row) => {
-      if (err) {
-        console.error('Errore statistiche:', err);
-        return res.status(500).json({});
-      }
-      res.json(row);
-    }
-  );
+  } catch (err) {
+    console.error('Errore statistiche:', err);
+    res.status(500).json({ error: 'Errore statistiche' });
+  }
 });
+
+
 
 /* =======================
    STATISTICHE PDF (READ ONLY)
