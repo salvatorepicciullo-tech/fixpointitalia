@@ -3275,6 +3275,14 @@ app.post('/api/fixpoint/quick-valuation', (req, res) => {
 app.get('/', (req, res) => {
   res.status(200).send('FixPoint API is running');
 });
+
+app.get('/api/debug-db-path', (req, res) => {
+  const path = require('path');
+  res.json({
+    dirname: __dirname,
+    dbPath: path.join(__dirname, 'fixpoint.db')
+  });
+});
 /* =======================
    START
 ======================= */
