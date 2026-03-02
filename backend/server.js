@@ -2258,9 +2258,9 @@ app.get('/api/stats/overview', (req, res) => {
     [],
     (err, row) => {
       if (err) {
-        console.error('Errore statistiche:', err);
-        return res.status(500).json({});
-      }
+  console.error('Errore statistiche:', err);
+  return res.status(500).json({ error: err.message });
+}
       res.json(row);
     }
   );
