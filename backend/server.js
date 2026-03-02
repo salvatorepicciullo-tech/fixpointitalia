@@ -2240,30 +2240,31 @@ app.get('/api/fixpoint/quotes', (req, res) => {
 /* =======================
    STATISTICHE (READ ONLY)
 ======================= */
-app.get('/api/stats/overview', async (req, res) => {
-  try {
+app.get('/api/stats/overview', (req, res) => {
+  db.get(
+    `
+    SELECT
+      (SELECT COUNT(*) FROM quotes) AS total,
+      (SELECT COUNT(*) FROM quotes WHERE status='ASSIGNED') AS assigned_count,
+      (SELECT COUNT(*) FROM quotes WHERE status='IN_PROGRESS') AS working_count,
+      (SELECT COUNT(*) FROM quotes WHERE status='DONE') AS done_count,
+      (SELECT IFNULL(SUM(price),0) FROM quotes WHERE status='DONE') AS total_amount,
 
-    const result = await db.query(`
-      SELECT
-        (SELECT COUNT(*) FROM quotes) AS total,
-        (SELECT COUNT(*) FROM quotes WHERE status='ASSIGNED') AS assigned_count,
-        (SELECT COUNT(*) FROM quotes WHERE status='IN_PROGRESS') AS working_count,
-        (SELECT COUNT(*) FROM quotes WHERE status='DONE') AS done_count,
-        (SELECT COALESCE(SUM(price),0) FROM quotes WHERE status='DONE') AS total_amount,
-        (SELECT COUNT(*) FROM device_valuations) AS valuations_total,
-        (SELECT COUNT(*) FROM device_valuations WHERE status='NEW') AS valuations_new,
-        (SELECT COUNT(*) FROM device_valuations WHERE status='IN_CONTACT') AS valuations_contact,
-        (SELECT COUNT(*) FROM device_valuations WHERE status='CLOSED') AS valuations_closed
-    `);
-
-    res.json(result.rows[0]);
-
-  } catch (err) {
-    console.error('Errore statistiche:', err);
-    res.status(500).json({ error: 'Errore statistiche' });
-  }
+      (SELECT COUNT(*) FROM device_valuations) AS valuations_total,
+      (SELECT COUNT(*) FROM device_valuations WHERE status='NEW') AS valuations_new,
+      (SELECT COUNT(*) FROM device_valuations WHERE status='IN_CONTACT') AS valuations_contact,
+      (SELECT COUNT(*) FROM device_valuations WHERE status='CLOSED') AS valuations_closed
+    `,
+    [],
+    (err, row) => {
+      if (err) {
+        console.error('Errore statistiche:', err);
+        return res.status(500).json({});
+      }
+      res.json(row);
+    }
+  );
 });
-
 
 
 /* =======================
