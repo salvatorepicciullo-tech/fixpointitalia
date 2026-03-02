@@ -34,6 +34,10 @@ export default function Home() {
       <section className="max-w-6xl mx-auto px-6 pb-32">
         <div className="grid gap-10 md:grid-cols-2">
 
+
+
+
+
         {/* PREVENTIVO */}
 <Link
   href="/preventivo"

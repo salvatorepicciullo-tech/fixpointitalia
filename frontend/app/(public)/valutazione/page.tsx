@@ -138,12 +138,19 @@ export default function ValutazionePage() {
           <div className="w-full max-w-3xl bg-white lg:rounded-2xl shadow-lg p-6 md:p-8 space-y-8 pb-32">
 
             <div className="text-center space-y-1 sticky top-0 bg-white/80 backdrop-blur py-2 border-b">
-              <h1 className="text-3xl font-bold text-gray-900">
-                Valuta il tuo dispositivo
-              </h1>
-              <p className="text-gray-600">
-                Scopri il valore del tuo dispositivo in pochi passaggi
-              </p>
+             <h1 className="text-3xl font-bold text-gray-900">
+  Valuta il tuo dispositivo
+</h1>
+
+<p className="text-gray-600">
+  Scopri il valore del tuo dispositivo in pochi passaggi
+</p>
+
+<div className="mt-3 text-sm text-gray-500 space-y-1">
+  <div>⚡ Valutazione gratuita e immediata</div>
+  <div>🔒 Nessun obbligo di vendita</div>
+  <div>🏪 Solo centri certificati</div>
+</div>
             </div>
 
             {/* Progress */}
@@ -155,32 +162,44 @@ export default function ValutazionePage() {
             </div>
 
             {/* Step Indicator */}
-            <div className="flex justify-between text-sm">
-              {['Dispositivo','Marca','Modello','Dettagli'].map((label,i)=>{
-                const s=(i+1) as 1|2|3|4;
-                const active=step===s;
-                const done=step>s;
+           <div className="flex justify-between text-sm">
+  {['Dispositivo','Marca','Modello','Dettagli'].map((label,i)=>{
+    const s=(i+1) as 1|2|3|4;
+    const active=step===s;
+    const done=step>s;
 
-                return(
-                  <div
-                    key={i}
-                    onClick={()=>setStep(s)}
-                    className={`flex items-center gap-2 cursor-pointer ${
-                      active?'text-black':done?'text-green-600':'text-gray-400'
-                    }`}
-                  >
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
-                      active?'bg-black text-white':
-                      done?'bg-green-600 text-white':
-                      'border border-gray-300'
-                    }`}>
-                      {done?'✓':s}
-                    </span>
-                    {label}
-                  </div>
-                )
-              })}
-            </div>
+    const canGo =
+      (s === 1) ||
+      (s === 2 && deviceTypeId) ||
+      (s === 3 && deviceTypeId && brandId) ||
+      (s === 4 && deviceTypeId && brandId && modelId);
+
+    return(
+      <div
+        key={i}
+        onClick={()=> {
+          if (canGo) setStep(s);
+        }}
+        className={`flex items-center gap-2 ${
+          canGo ? 'cursor-pointer' : 'cursor-not-allowed'
+        } ${
+          active?'text-black':
+          done?'text-green-600':
+          'text-gray-400'
+        }`}
+      >
+        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+          active?'bg-black text-white':
+          done?'bg-green-600 text-white':
+          'border border-gray-300'
+        }`}>
+          {done?'✓':s}
+        </span>
+        {label}
+      </div>
+    )
+  })}
+</div>
 
             {/* STEP CONTENT */}
             {step===1 && (
@@ -189,7 +208,7 @@ export default function ValutazionePage() {
                   <button
                     key={d.id}
                     onClick={()=>setDeviceTypeId(d.id)}
-                    className="rounded-xl border p-4 hover:border-black"
+                    className="rounded-xl border p-4 hover:border-black hover:bg-gray-50 transition active:scale-95"
                   >
                     {d.name}
                   </button>
@@ -201,7 +220,11 @@ export default function ValutazionePage() {
               <select
                 className="w-full border rounded-xl px-4 py-3"
                 value={brandId ?? ''}
-                onChange={e=>setBrandId(Number(e.target.value))}
+                onChange={e=>{
+  const val = e.target.value ? Number(e.target.value) : null;
+  setBrandId(val);
+  setModelId(null);
+}}
               >
                 <option value="">Seleziona marca</option>
                 {brands.map(b=>(
@@ -214,7 +237,10 @@ export default function ValutazionePage() {
               <select
                 className="w-full border rounded-xl px-4 py-3"
                 value={modelId ?? ''}
-                onChange={e=>setModelId(Number(e.target.value))}
+                onChange={e=>{
+  const val = e.target.value ? Number(e.target.value) : null;
+  setModelId(val);
+}}
               >
                 <option value="">Seleziona modello</option>
                 {models.map(m=>(
@@ -223,64 +249,75 @@ export default function ValutazionePage() {
               </select>
             )}
 
-            {step===4 && (
-              <div className="space-y-6">
+         {step===4 && (
+  <div className="space-y-6">
 
-                <div className="grid gap-2">
-                  {defects.map(d=>{
-                    const active=selectedDefects.includes(d.id);
-                    return(
-                      <button
-                        key={d.id}
-                        onClick={()=>setSelectedDefects(prev=>prev.includes(d.id)?prev.filter(x=>x!==d.id):[...prev,d.id])}
-                        className={`border rounded-xl p-3 flex justify-between ${
-                          active?'border-black bg-gray-50':'hover:border-gray-400'
-                        }`}
-                      >
-                        {d.name}
-                        {active && '✓'}
-                      </button>
-                    )
-                  })}
-                </div>
-
-              <div className="relative">
-  <input
-    className="w-full border rounded-xl px-4 py-3"
-    value={city}
-    onChange={e => {
-      setCity(e.target.value);
-      setShowCityDropdown(true);
-    }}
-    placeholder="Inserisci la tua città"
-  />
-
-  {showCityDropdown && citySuggestions.length > 0 && (
-    <div className="absolute z-20 mt-1 w-full bg-white border rounded-xl shadow-lg max-h-60 overflow-y-auto">
-      {citySuggestions.map((s: any, i: number) => (
-        <button
-          key={i}
-          onClick={() => {
-            setCity(s.display_name.split(',')[0]);
-            setShowCityDropdown(false);
-          }}
-          className="w-full text-left px-4 py-2 hover:bg-gray-100"
-        >
-          {s.display_name}
-        </button>
-      ))}
+    <div className="text-sm text-gray-500">
+      Seleziona eventuali difetti per una valutazione più precisa.
     </div>
-  )}
-</div>
-              </div>
-            )}
+
+    <div className="grid gap-2">
+      {defects.map(d=>{
+        const active=selectedDefects.includes(d.id);
+        return(
+          <button
+            key={d.id}
+            onClick={()=>setSelectedDefects(prev=>prev.includes(d.id)?prev.filter(x=>x!==d.id):[...prev,d.id])}
+            className={`border rounded-xl p-3 flex justify-between ${
+              active?'border-black bg-gray-50':'hover:border-gray-400'
+            }`}
+          >
+            {d.name}
+            {active && '✓'}
+          </button>
+        )
+      })}
+    </div>
+
+    <div className="relative">
+      <input
+        className="w-full border rounded-xl px-4 py-3"
+        value={city}
+        onChange={e => {
+          setCity(e.target.value);
+          setShowCityDropdown(true);
+        }}
+        placeholder="Inserisci la tua città"
+      />
+
+      {showCityDropdown && citySuggestions.length > 0 && (
+        <div className="absolute z-20 mt-1 w-full bg-white border rounded-xl shadow-lg max-h-60 overflow-y-auto">
+          {citySuggestions.map((s: any, i: number) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => {
+                setCity(s.display_name.split(',')[0]);
+                setShowCityDropdown(false);
+              }}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100"
+            >
+              {s.display_name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+
+  </div>
+)}
 
             <button
               onClick={()=> step<4?setStep((step+1) as any):goNext()}
-              disabled={(step===4 && city.trim().length<2)}
-              className="w-full bg-black hover:bg-gray-800 text-white py-4 rounded-xl text-lg font-semibold transition disabled:opacity-40 fixed bottom-0 left-0 right-0 lg:relative"
+             disabled={
+  (step===1 && !deviceTypeId) ||
+  (step===2 && !brandId) ||
+  (step===3 && !modelId) ||
+  (step===4 && city.trim().length<2)
+}
+              className="w-full bg-black hover:bg-gray-800 text-white py-4 rounded-xl text-lg font-semibold transition disabled:opacity-40 fixed bottom-0 left-0 right-0 lg:relative shadow-lg"
             >
-              {step<4?'Continua':'Prosegui'}
+              {step<4 ? 'Continua' : '🔥 Trova il miglior centro'}
             </button>
 
           </div>

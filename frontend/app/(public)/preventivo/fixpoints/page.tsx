@@ -158,13 +158,19 @@ export default function FixpointsPage() {
       <div className="relative overflow-hidden bg-gradient-to-b from-blue-50 via-sky-50 to-white px-4 pt-20 pb-24">
         <div className="max-w-5xl mx-auto text-center relative z-10">
 
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Scegli il centro FixPoint più vicino a te
-          </h1>
+         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+  Scegli il centro FixPoint più vicino a te
+</h1>
 
-          <p className="text-lg text-gray-600">
-            Mostriamo i centri più vicini alla tua posizione.
-          </p>
+<p className="text-lg text-gray-600">
+  Centri certificati con tecnici specializzati.
+</p>
+
+<div className="mt-3 text-sm text-gray-500 space-y-1">
+  <div>🛠 Riparazioni professionali</div>
+  <div>⏱ Interventi rapidi</div>
+  <div>🛡 Garanzia fino a 12 mesi</div>
+</div>
 
         </div>
       </div>
@@ -195,15 +201,21 @@ export default function FixpointsPage() {
               >
 
                 <div>
-                  <div className="font-semibold text-gray-900">
-                    FixPoint Autorizzato
-                  </div>
+                <div className="font-semibold text-gray-900">
+  {fp.name}
+</div>
 
-                  {fp.distance !== undefined && (
-                    <div className="text-xs text-blue-600 mt-1">
-                      📍 {Number(fp.distance).toFixed(1)} km da te
-                    </div>
-                  )}
+{fp.address && (
+  <div className="text-sm text-gray-500 mt-1">
+    📍 {fp.address} {fp.city && `- ${fp.city}`}
+  </div>
+)}
+
+                {fp.distance !== undefined && (
+  <div className="text-xs text-blue-600 mt-1">
+    📍 {Number(fp.distance).toFixed(1)} km dalla tua posizione
+  </div>
+)}
                 </div>
 
                 {active && (
@@ -222,8 +234,11 @@ export default function FixpointsPage() {
               disabled={!selected}
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold disabled:opacity-40"
             >
-              Continua
+              🔥 Conferma centro e continua
             </button>
+<p className="text-xs text-gray-400 text-right mt-2">
+  Nessun pagamento online • Solo richiesta di preventivo
+</p>
           </div>
 
         </div>

@@ -1,17 +1,47 @@
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const dbPath = path.join(__dirname, 'fixpoint.db');
 const bcrypt = require('bcrypt');
 const PDFDocument = require('pdfkit');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 require('dotenv').config();
-const JWT_SECRET = 'fixpoint_super_secret'; // poi lo spostiamo in env
+const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
+const path = require('path');
+
+const DB_PROVIDER = process.env.DB_PROVIDER || 'sqlite';
+
+let db;
+
+if (DB_PROVIDER === 'postgres') {
+  console.log('🔥 USING POSTGRESQL');
+  db = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+} else {
+  console.log('🔥 USING SQLITE');
+  const dbPath = path.join(__dirname, 'fixpoint.db');
+  db = new sqlite3.Database(dbPath);
+}
+const JWT_SECRET = process.env.JWT_SECRET; 
 console.log('🔥 BACKEND FIXPOINT NUOVA VERSIONE CARICATA 🔥');
 
 const app = express();
+app.disable('x-powered-by');
+app.use(helmet());
+// 🔒 RATE LIMIT LOGIN (ANTI BRUTE FORCE)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minuti
+  max: 5,
+  message: {
+    error: "Troppi tentativi di login. Riprova tra 15 minuti."
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 const PORT = 3001;
 const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
@@ -197,157 +227,7 @@ cc: process.env.MAIL_USER,
 app.use(cors());
 app.use(express.json());
 
-/* =======================
-   DATABASE
-======================= */
-console.log('USING DATABASE FILE:', dbPath);
 
-const db = new sqlite3.Database(dbPath, err => {
-  if (err) {
-    console.error('Errore DB:', err.message);
-  } else {
-    db.configure('busyTimeout', 5000);
-    db.run('PRAGMA journal_mode = WAL');
-    db.run('PRAGMA foreign_keys = ON');
-    console.log('Database collegato correttamente ✅');
-    initDatabase();
-  }
-});
-function initDatabase() {
-  const tables = [
-    'CREATE TABLE IF NOT EXISTS device_types (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, active INTEGER DEFAULT 1)',
-    'CREATE TABLE IF NOT EXISTS brands (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, active INTEGER DEFAULT 1)',
-    'CREATE TABLE IF NOT EXISTS models (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, device_type_id INTEGER, brand_id INTEGER)',
-    'CREATE TABLE IF NOT EXISTS repairs (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, active INTEGER DEFAULT 1)',
-  'CREATE TABLE IF NOT EXISTS model_repairs (id INTEGER PRIMARY KEY AUTOINCREMENT, model_id INTEGER, repair_id INTEGER, price REAL)',
-
-
-`CREATE TABLE IF NOT EXISTS fixpoint_brand_rules (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  fixpoint_id INTEGER NOT NULL,
-  brand_id INTEGER NOT NULL,
-  price_percent INTEGER DEFAULT 0
-)`,
-
-`CREATE TABLE IF NOT EXISTS quotes (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  model_id INTEGER,
-  fixpoint_id INTEGER,
-  price REAL,
-  city TEXT,
-  customer_name TEXT,
-  customer_email TEXT,
-  customer_phone TEXT,
-  status TEXT DEFAULT 'NEW',
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)`,
-
-`CREATE TABLE IF NOT EXISTS quote_repairs (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  quote_id INTEGER,
-  repair_id INTEGER
-)`
-
-  ];
-
-  tables.forEach(sql => db.run(sql));
-}
-// 🔥 AGGIUNGE PERCENTUALE PREZZO AI FIXPOINT (SAFE)
-db.run(
-  `ALTER TABLE fixpoints ADD COLUMN price_percent INTEGER DEFAULT 0`,
-  err => {
-    if (err && !err.message.includes('duplicate column')) {
-      console.error('Errore ALTER TABLE fixpoints:', err.message);
-    }
-  }
-);
-
-// 🔥 AGGIUNGE DEVICE TYPE ALLE RIPARAZIONI (SAFE)
-db.run(
-  `ALTER TABLE repairs ADD COLUMN device_type_id INTEGER`,
-  err => {
-    if (err && !err.message.includes('duplicate column')) {
-      console.error('Errore ALTER TABLE repairs:', err.message);
-    }
-  }
-);
-
-db.run(
-  `ALTER TABLE quotes ADD COLUMN description TEXT`,
-  err => {
-    if (err && !err.message.includes('duplicate column')) {
-      console.error('Errore ALTER TABLE quotes description:', err.message);
-    }
-  }
-);
-
-// 🔥 AGGIUNGE DATA ORARIO PREFERITO AI QUOTES (SAFE)
-db.run(
-  `ALTER TABLE quotes ADD COLUMN preferred_datetime DATETIME`,
-  err => {
-    if (err && !err.message.includes('duplicate column')) {
-      console.error('Errore ALTER TABLE preferred_datetime:', err.message);
-    }
-  }
-);
-
-
-// 🔥 AGGIUNGE DATA ORARIO PREFERITO ALLE VALUTAZIONI (SAFE)
-db.run(
-  `ALTER TABLE device_valuations ADD COLUMN preferred_datetime DATETIME`,
-  err => {
-    if (err && !err.message.includes('duplicate column')) {
-      console.error('Errore ALTER TABLE preferred_datetime valuations:', err.message);
-    }
-  }
-);
-
-
-// 🔥 AGGIUNGE DESCRIPTION AI QUOTES (SAFE)
-db.run(
-  `ALTER TABLE quotes ADD COLUMN description TEXT`,
-  err => {
-    if (err && !err.message.includes('duplicate column')) {
-      console.error('Errore ALTER TABLE quotes:', err.message);
-    }
-  }
-);
-
-
-// =======================
-// DEVICE BASE VALUES
-// =======================
-db.run(`
-  CREATE TABLE IF NOT EXISTS device_base_values (
-    model_id INTEGER PRIMARY KEY,
-    max_value REAL NOT NULL,
-    FOREIGN KEY (model_id) REFERENCES models(id)
-  )
-`);
-
-// =======================
-// DEVICE DEFECTS
-// =======================
-db.run(`
-  CREATE TABLE IF NOT EXISTS device_defects (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL
-  )
-`);
-
-// =======================
-// DEFECT PENALTIES
-// =======================
-db.run(`
-  CREATE TABLE IF NOT EXISTS device_defect_penalties (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    model_id INTEGER NOT NULL,
-    defect_id INTEGER NOT NULL,
-    penalty REAL NOT NULL,
-    FOREIGN KEY (model_id) REFERENCES models(id),
-    FOREIGN KEY (defect_id) REFERENCES device_defects(id)
-  )
-`);
 
 
 
@@ -2549,7 +2429,7 @@ doc
 /* =======================
    AUTH – LOGIN
 ======================= */
-app.post('/api/login', (req, res) => {
+app.post('/api/login', loginLimiter, (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {

@@ -357,13 +357,19 @@ py-2
 border-b border-gray-100
 ">
 
+<h1 className="text-3xl font-bold text-gray-900">
+  Calcola il tuo preventivo
+</h1>
 
-            <h1 className="text-3xl font-bold text-gray-900">
-              Calcola il tuo preventivo
-            </h1>
-            <p className="text-gray-600">
-              Seleziona il dispositivo e scopri il costo della riparazione
-            </p>
+<p className="text-gray-600">
+  Seleziona il dispositivo e scopri il costo della riparazione
+</p>
+
+<div className="mt-3 text-sm text-gray-500 space-y-1">
+  <div>⏱ Preventivo gratuito e senza impegno</div>
+  <div>🔒 I tuoi dati sono protetti</div>
+  <div>⚡ Risposta rapida dal centro assistenza</div>
+</div>
           </div>
 
           {/* STEP INDICATOR */}
@@ -731,8 +737,14 @@ shadow-[0_-6px_20px_rgba(0,0,0,0.08)]
 
 
           >
-            {step < 4 ? 'Continua' : 'Cerca il tuo centro'}
+            {step < 4 ? 'Continua' : '🔥 Trova il centro disponibile'}
           </button>
+	{step === 4 && (
+  <p className="text-xs text-center text-gray-400 mt-2">
+    Nessun pagamento online • Nessun obbligo • Solo centri certificati
+  </p>
+)}
+
 
         </div>
         {/* =======================

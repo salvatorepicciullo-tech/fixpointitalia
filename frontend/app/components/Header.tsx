@@ -43,31 +43,47 @@ export default function Header() {
           </Link>
 
           {/* MENU DESKTOP */}
-          <nav className="hidden md:flex items-center gap-10">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
+        <div className="hidden md:flex items-center gap-10">
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`relative text-sm font-medium transition ${
-                    isActive
-                      ? 'text-black'
-                      : 'text-gray-700 hover:text-black'
-                  }`}
-                >
-                  {item.name}
+  <nav className="flex items-center gap-10">
+    {navItems.map((item) => {
+      const isActive = pathname === item.href;
 
-                  <span
-                    className={`absolute left-0 -bottom-1 h-[2px] bg-black transition-all duration-300 ${
-                      isActive ? 'w-full' : 'w-0 group-hover:w-full'
-                    }`}
-                  />
-                </Link>
-              );
-            })}
-          </nav>
+      return (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={`relative text-sm font-medium transition ${
+            isActive
+              ? 'text-black'
+              : 'text-gray-700 hover:text-black'
+          }`}
+        >
+          {item.name}
+
+          <span
+            className={`absolute left-0 -bottom-1 h-[2px] bg-black transition-all duration-300 ${
+              isActive ? 'w-full' : 'w-0 group-hover:w-full'
+            }`}
+          />
+        </Link>
+      );
+    })}
+  </nav>
+
+  {/* APP BUTTON */}
+ <button
+  onClick={() => {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      return;
+    }
+  }}
+  className="ml-4 px-4 py-2 border border-black rounded-full text-sm font-medium hover:bg-black hover:text-white transition"
+>
+  📲 App
+</button>
+
+</div>
 
           {/* HAMBURGER MOBILE */}
           <button
