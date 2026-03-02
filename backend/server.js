@@ -3278,7 +3278,9 @@ app.post('/api/fixpoint/quick-valuation', (req, res) => {
 });
 */
 
-
+app.get('/', (req, res) => {
+  res.status(200).send('FixPoint API is running');
+});
 /* =======================
    START
 ======================= */
