@@ -3283,6 +3283,21 @@ app.get('/api/debug-db-path', (req, res) => {
     dbPath: path.join(__dirname, 'fixpoint.db')
   });
 });
+
+const fs = require('fs');
+
+app.get('/api/debug-db-info', (req, res) => {
+  const path = require('path');
+  const dbFile = path.join(__dirname, 'fixpoint.db');
+
+  res.json({
+    exists: fs.existsSync(dbFile),
+    size: fs.existsSync(dbFile) ? fs.statSync(dbFile).size : 0
+  });
+});
+
+
+
 /* =======================
    START
 ======================= */
