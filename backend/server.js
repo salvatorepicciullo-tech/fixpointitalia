@@ -42,7 +42,7 @@ const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
   port: process.env.MAIL_PORT,
@@ -3283,5 +3283,5 @@ app.post('/api/fixpoint/quick-valuation', (req, res) => {
    START
 ======================= */
 app.listen(PORT, () => {
-  console.log(`Backend avviato su http://localhost:${PORT} ✅`);
+  console.log(`Backend avviato sulla porta ${PORT} ✅`);
 });
